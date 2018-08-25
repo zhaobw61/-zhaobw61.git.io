@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="廖文浩在 Github 上的个人博客">
+    <meta name="keyword" content="null">
+    <meta name="theme-color" content="#600090">
+    <meta name="msapplication-navbutton-color" content="#600090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#600090">
+    <link rel="shortcut icon" href="http://om8hmotom.bkt.clouddn.com/2017-06-19-comic.jpeg">
+    <link rel="alternate" type="application/atom+xml" title="KYLEWH" href="/atom.xml">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
+    <title>
+        
+        JS: Accumulate from 0系列之变量&amp;操作符｜Kyle&#39;s blog
+        
+    </title>
+
+    <link rel="canonical" href="http://kylewh.github.io/2017/03/07/JS-Accumulate-from-0/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/blog-style.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+</head>
+
+<style>
+
+    header.intro-header {
+        background-image: url('http://om8hmotom.bkt.clouddn.com/banner_2.jpg')
+    }
+</style>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="" class="animated fadeIn">
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
+" data-ishome = "false" >
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand animated pulse" href="/">
+                <span class="brand-logo">
+                    KYLEWH
+                </span>
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <!-- /.navbar-collapse -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+					
+                    
+                        
+							
+                        <li>
+                            <a href="/tags/">tags</a>
+                        </li>
+							
+						
+                    
+					
+					
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+//    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+<!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="http://om8hmotom.bkt.clouddn.com/book.jpg">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('http://om8hmotom.bkt.clouddn.com/book.jpg?imageView2/1/w/1400/h/400/interlace/1/q/90')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>JS: Accumulate from 0系列之变量&amp;操作符</h1>
+                    
+                    <span class="meta">
+                         作者 Kylewh
+                        <span>
+                          日期 2017-03-07
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                        <a class="tag" href="/tags/#JS"
+                           title="JS">JS</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="post-title-haojen">
+        <span>
+            JS: Accumulate from 0系列之变量&操作符
+        </span>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+                <blockquote>
+<p>本文内容讲述JS里最基本的知识：变量 和 操作符</p>
+</blockquote>
+<h1 id="变量的声明"><a href="#变量的声明" class="headerlink" title="变量的声明"></a>变量的声明</h1><p>变量的声明有三种方法： <code>var</code>, <code>let</code>, <code>const</code></p>
+<ul>
+<li>var 声明一个变量，将其初始化成一个值，不支持块级作用域，存在变量提升。<strong>注意</strong>：使用<code>var</code>操作符定义的变量将成为定义该变量的作用域中的<strong>局部变量</strong>，也就是说，如果在函数中使用<code>var</code>定义一个变量，在函数执行完毕生命周期结束时这个局部变量也会被销毁。</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> a;</div><div class="line"><span class="built_in">console</span>.log(a); <span class="comment">// undefined;</span></div><div class="line">a = <span class="number">1</span>;</div><div class="line"><span class="built_in">console</span>.log(a); <span class="comment">// 1</span></div><div class="line"></div><div class="line"><span class="comment">//不支持块级作用域</span></div><div class="line"><span class="keyword">var</span> b = <span class="number">10</span>;</div><div class="line">&#123;  </div><div class="line">	<span class="keyword">var</span> b = <span class="number">100</span>;</div><div class="line">&#125;</div><div class="line"><span class="built_in">console</span>.log(b); <span class="comment">//100</span></div><div class="line"></div><div class="line"><span class="comment">//变量提升</span></div><div class="line"><span class="built_in">console</span>.log(x); <span class="comment">//undefined</span></div><div class="line"><span class="keyword">var</span> x = <span class="number">100</span>;</div><div class="line"><span class="built_in">console</span>.log(x); <span class="comment">//100</span></div></pre></td></tr></table></figure>
+<p>特殊的一点： 在函数内部声明变量如果<strong>不使用</strong><code>var</code>操作符的话这个变量会被创建成一个<strong>全局变量</strong>。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">test</span>(<span class="params"></span>)</span>&#123;</div><div class="line">	message = <span class="string">'hi'</span>; <span class="comment">//global variable</span></div><div class="line">&#125;</div><div class="line">test();</div><div class="line"><span class="built_in">console</span>.log(message); <span class="comment">//hi;</span></div></pre></td></tr></table></figure>
+<ul>
+<li>let 声明一个块级作用域变量， 可以将其初始化成一个值。在同一作用域中不允许重复声明，存在暂存死区（不支持变量提升）。</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> a = <span class="number">100</span>;</div><div class="line">&#123;</div><div class="line">	<span class="keyword">let</span> a = <span class="number">10</span>;</div><div class="line">&#125;</div><div class="line"><span class="built_in">console</span>.log(a); <span class="comment">//100</span></div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(b); <span class="comment">//"ReferenceError: b is not defined</span></div><div class="line"><span class="keyword">let</span> b = <span class="number">9</span>;</div><div class="line"><span class="comment">//let b = 99; //报错</span></div><div class="line"></div><div class="line"><span class="comment">//块级作用域妙用 循环</span></div><div class="line"></div><div class="line"><span class="keyword">for</span>(<span class="keyword">let</span> i =<span class="number">0</span>; i&lt;<span class="number">10</span>; i++) &#123;</div><div class="line">	<span class="built_in">console</span>.log(i);</div><div class="line">&#125;</div><div class="line"><span class="comment">//0,1,2,3,4,5,6,7,8,9 不需要使用闭包了</span></div></pre></td></tr></table></figure>
+<ul>
+<li>const 声明的标识符绑定的值不可以再次改变，其他行为和let一样</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">const</span> a = <span class="number">10</span>;</div><div class="line">a = <span class="number">100</span>; <span class="comment">//"TypeError: Assignment to constant variable.</span></div><div class="line"></div><div class="line"><span class="keyword">const</span> b = &#123;</div><div class="line">						<span class="string">'one'</span>: <span class="number">1</span>,</div><div class="line">						<span class="string">'two'</span>: <span class="number">2</span></div><div class="line">					&#125;;</div><div class="line">b.one = <span class="number">2</span>;</div><div class="line"><span class="comment">//此时绑定的是对object的引用，通过这个引用我们可以改变里面key对应的值。</span></div><div class="line"><span class="built_in">console</span>.dir(b);</div><div class="line"><span class="comment">/*</span></div><div class="line">    [object Object] &#123;</div><div class="line">      one: 2,</div><div class="line">      two: 2</div><div class="line">    &#125;</div><div class="line">*/</div><div class="line"></div><div class="line"><span class="comment">//改变引用则报错</span></div><div class="line">b = &#123;&#125;; <span class="comment">//"TypeError: Assignment to constant variable.</span></div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//利用闭包模拟静态变量</span></div><div class="line"><span class="keyword">var</span> Conf = (<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">            <span class="comment">//私有变量</span></div><div class="line">            <span class="keyword">var</span> conf = &#123;</div><div class="line">                <span class="attr">STOCK</span>: <span class="number">100</span>, <span class="comment">//静态变量都大写</span></div><div class="line">                PRICE: <span class="number">50</span></div><div class="line">            &#125;;</div><div class="line">            <span class="comment">//返回取值器对象</span></div><div class="line">            <span class="keyword">return</span> &#123;</div><div class="line">                <span class="attr">get</span>: <span class="function"><span class="keyword">function</span> (<span class="params">name</span>) </span>&#123;</div><div class="line">                    <span class="keyword">return</span> conf[name] ? conf[name] : <span class="literal">null</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;)();</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(Conf.get(<span class="string">'STOCK'</span>)); <span class="comment">//100</span></div><div class="line"><span class="comment">//只能获取，不能修改。</span></div></pre></td></tr></table></figure>
+<p><strong>严格模式</strong>:<code>use strict</code>下，不声明进行使用会报错：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line"><span class="meta">  'use strict'</span>;</div><div class="line">  <span class="keyword">var</span> x = y = <span class="number">0</span>; <span class="comment">//"ReferenceError: y is not defined</span></div><div class="line">&#125;)();</div></pre></td></tr></table></figure>
+<h1 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h1><p>ECMAScript中有6种简单数据类型，<strong>Undefined</strong>, <strong>Null</strong>, <strong>Boolean</strong>, <strong>Number</strong>, <strong>String</strong>, <strong>Symbol</strong>. 一种复杂数据类型Object(Function).</p>
+<h3 id="typeof操作符"><a href="#typeof操作符" class="headerlink" title="typeof操作符"></a>typeof操作符</h3><p>用来检测给定变量的数据类型:</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="built_in">console</span>.log (</div><div class="line">  <span class="keyword">typeof</span> a, <span class="comment">//undefined;</span></div><div class="line">  <span class="keyword">typeof</span> <span class="literal">false</span>, <span class="comment">//boolean</span></div><div class="line">  <span class="keyword">typeof</span> <span class="string">'kylewh'</span>, <span class="comment">//string</span></div><div class="line">  <span class="keyword">typeof</span> <span class="number">666</span>, <span class="comment">//number</span></div><div class="line">  <span class="keyword">typeof</span> &#123;&#125;, <span class="comment">//object</span></div><div class="line">  <span class="keyword">typeof</span> (<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125;), <span class="comment">// function</span></div><div class="line">  <span class="keyword">typeof</span> <span class="literal">null</span> <span class="comment">//object 历史遗留问题 object的源头</span></div><div class="line">);</div></pre></td></tr></table></figure>
+<p><strong>PITFALL ALERT</strong>： </p>
+<ul>
+<li>对于未定义和未初始化的变量，typeof对其的检测结果都是<code>undefined</code>，这说明了显式初始化变量的重要性，以使我们可以分辨一个变量是否已经被声明。</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="built_in">console</span>.log( <span class="keyword">typeof</span> a );<span class="comment">//undefined;</span></div><div class="line"><span class="keyword">var</span> b;</div><div class="line"><span class="built_in">console</span>.log( <span class="keyword">typeof</span> b ); <span class="comment">//undefined;</span></div></pre></td></tr></table></figure>
+<ul>
+<li>因为<strong>基本包装类型</strong>的存在，依赖typeof进行类型检测并不可靠：（PS：基本包装类型从属于引用类型，在之后将介绍，期间还会有一个小trick，留意哦）</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> a = <span class="keyword">new</span> <span class="built_in">Number</span>(<span class="number">9</span>);</div><div class="line"><span class="built_in">console</span>.log( <span class="keyword">typeof</span> a ); <span class="comment">//object;</span></div></pre></td></tr></table></figure>
+<ul>
+<li>可靠的检测方法</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> Type = &#123;&#125;;</div><div class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>,type; type=[<span class="string">'String'</span>, <span class="string">'Array'</span>, <span class="string">'Number'</span>][i++]; ) &#123;</div><div class="line">    (<span class="function"><span class="keyword">function</span>(<span class="params">type</span>)</span>&#123;</div><div class="line">        Type[<span class="string">'is'</span> + type] = <span class="function"><span class="keyword">function</span> (<span class="params">obj</span>) </span>&#123;</div><div class="line">            <span class="keyword">return</span> <span class="built_in">Object</span>.prototype.toString.call(obj) === <span class="string">'[Object '</span> + type + <span class="string">']'</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;)(type)</div><div class="line">&#125;</div><div class="line"><span class="built_in">console</span>.log ( Type.isArray([])); <span class="comment">//true</span></div></pre></td></tr></table></figure>
+<h3 id="Undefined类型"><a href="#Undefined类型" class="headerlink" title="Undefined类型"></a>Undefined类型</h3><p>Undefined类型只有一个值： <code>undefined</code>，其他内容上面已经带着说了一下。</p>
+<h3 id="Null类型"><a href="#Null类型" class="headerlink" title="Null类型"></a>Null类型</h3><p>它是第二个只有一个值的类型，它可以被看做javascript一切对象的起源，后面讲原型的时候会讲到。null值表示一个空对象指针，这也是为什么检测null用typeof会返回obejct的原因。 如果生命了以后对象是为了以后保存一个对象，那么可以显式的将其初始化为null而不是其他值。     </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="built_in">console</span>.log( <span class="literal">null</span> == <span class="literal">undefined</span> ); <span class="comment">//这里==操作符其实对操作数做了转换</span></div></pre></td></tr></table></figure>
+<p>undefined其实派生自null.</p>
+<h3 id="Boolean类型"><a href="#Boolean类型" class="headerlink" title="Boolean类型"></a>Boolean类型</h3><p>两个值: <code>ture</code> and <code>false</code>.如果想要将其他类型的值转化为boolean类型，可以使用转型函数Boolean(); 在if语句中，括号里的值也会被调用Boolean()进行转型，转型结果见下面falsy value.</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> mes = <span class="string">'hi there'</span>;</div><div class="line"><span class="built_in">console</span>.log(<span class="built_in">Boolean</span>(mes)); <span class="comment">//true</span></div></pre></td></tr></table></figure>
+<p>另外我们也可以使用<code>!!</code>让一个值转化为boolean类型：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> b = &#123;&#125;;</div><div class="line"><span class="built_in">console</span>.log(!!b, <span class="keyword">typeof</span> !!b); <span class="comment">//true, boolean</span></div></pre></td></tr></table></figure>
+<h4 id="falsy-value"><a href="#falsy-value" class="headerlink" title="falsy value"></a>falsy value</h4><p>所谓falsy value就是这些值在进行转型时会被转化成false的值: </p>
+<ul>
+<li><strong>false`</strong></li>
+<li><strong>“”</strong>(空字符串)</li>
+<li><strong>0</strong> 和 <strong>-0</strong> , <strong>NaN</strong></li>
+<li><strong>null</strong></li>
+<li><strong>undefined</strong></li>
+</ul>
+<p>而除此以外，非空字符串，非0数字值，包括Infinity，任何对象，都能被转化为true.</p>
+<h3 id="Number类型"><a href="#Number类型" class="headerlink" title="Number类型"></a>Number类型</h3><p>整数范围：-2^53 - 2^53, Number类型具有不同进制数，ECMA-262定义了不同的数值字面量格式：</p>
+<ul>
+<li>八进制第一位必须为0，然后是八进制数字序列(0-7)，如果字面值中的数值超出了范围，前导的0将会被忽略，后边的数值将被当做十进制数值解析。</li>
+<li>十六进制前两位必须是0x, 后跟任何十六进制数字(0-9,A-F), A-F字母可以大写也可以小写。   </li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> intNum = <span class="number">55</span>; <span class="comment">//整数</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> octalNum1 = <span class="number">070</span>; <span class="comment">//八进制56</span></div><div class="line"><span class="keyword">var</span> octalNum2 = <span class="number">079</span>; <span class="comment">// 9超出0-7范围，解析失败，忽略0，当成十进制解析 结果为79</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> hexNum1 = <span class="number">0xA</span>; <span class="comment">//十六进制的10</span></div><div class="line"></div><div class="line"><span class="comment">//严格模式下不允许八进制和十六进制的字面量写法 'use strict'</span></div><div class="line"><span class="string">``</span><span class="string">` </span></div><div class="line"></div><div class="line">**PITFALL ALIERT**  </div><div class="line"></div><div class="line">`<span class="string">``</span>javascript</div><div class="line"><span class="keyword">var</span> hexNum2 = <span class="number">0</span>xZ; <span class="comment">//十六进制的10</span></div><div class="line"><span class="comment">//SyntaxError: Invalid or unexpected token 记住十六进制不像八进制那样可以进行宽容解析。</span></div></pre></td></tr></table></figure>
+<p>进行算术计算时，所有以八进制和十六进制表示的数值最终都将被转化成十进制，也就是说计算使用十进制。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">let</span> result = hexNum1 + octalNum1 + intNum; </div><div class="line"><span class="comment">//10+56+55 =  121</span></div></pre></td></tr></table></figure>
+<h4 id="浮点值"><a href="#浮点值" class="headerlink" title="浮点值"></a>浮点值</h4><ul>
+<li>内存占用为整数的两倍，所以JS会抓住时机将其转化为整数，比如小数点后没有任何数字时，它就会被保存为整数： <code>var a = 1.;</code>， 如果浮点值本身表示的就是整数，也会被转化成整数： <code>var b = 11.0;</code></li>
+<li>JS的浮点数计算使用基于IEEE754数值的浮点计算： <code>0.1 + 0.2 !== 0.3</code></li>
+<li>可以使用科学计数法： <code>var floatNum = 3.12e7</code>，等于31250000.</li>
+<li><code>Number.MIN_VALUE</code> : 5e-324</li>
+<li><code>Number.MAX_VALUE</code> : 1.7976931348623157e+308</li>
+<li>如果一个数值超越了数值范围，会被转化成<code>Infinity</code>(带正负号)，可以用isFinite()判断一个值是否有穷。</li>
+<li><code>NaN</code>，任何涉及<code>NaN</code>的值都会返回<code>NaN</code>， 不和任何值相等，包括自己，所以有一个isNaN()函数用来判断它，接受一个值，使用Number()转型函数将其转换成数字，然后判断其是不是<code>NaN</code>. </li>
+<li>如果传入对象，会先调用valueOf()方法，如果不能转化为数值，就调用toString()方法，再返回测试值</li>
+</ul>
+<h4 id="数值转换"><a href="#数值转换" class="headerlink" title="数值转换"></a>数值转换</h4><p><code>Number()</code>, <code>parseInt()</code>, <code>parseFloat()</code>， Number可以把任何数据类型转型成数值，后面两个方法专注于将字符串转化成数值。     </p>
+<ul>
+<li>如果是Boolean值，true和false分别别转化成1和0</li>
+<li>如果是数字，简单的传入和返回</li>
+<li>如果是null，返回0</li>
+<li>如果是undefined，返回NaN</li>
+<li><strong>如果是对象，调用对象的valueOf方法，然后按前面的规则转化，如果结果是NaN，则调用toString方法，再按照前面的方法转化。</strong></li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//利用一元加操作符可以将非数值转换成数值，（利用Number());</span></div><div class="line"><span class="keyword">var</span> date = <span class="keyword">new</span> <span class="built_in">Date</span>();</div><div class="line"><span class="built_in">console</span>.log( +date ); <span class="comment">//1488956237515</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> o = &#123;</div><div class="line">	<span class="attr">valueOf</span>: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"><span class="built_in">console</span>.log( +o ); <span class="comment">// -1;</span></div></pre></td></tr></table></figure>
+<p><strong>parseInt()</strong>: 它会忽略传入字符串前面的空格，直到找到第一个非空格字符串，如果第一个字符不是数字字符，或者符号，返回<code>NaN</code>。如果第一个字符是数字，则继续解析，直到解析完所有字符或者遇到非数字字符则停下来。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> num1 = <span class="built_in">parseInt</span>(<span class="string">'   a111'</span>); <span class="comment">//NaN</span></div><div class="line"><span class="keyword">var</span> num2 = <span class="built_in">parseInt</span>(<span class="string">' 0111a '</span>); <span class="comment">//111</span></div></pre></td></tr></table></figure>
+<p>在ECMAScipt 5 JavaScript引擎中，已经不支持对八进制的解析，所以可以传入第二个参数进行制定制式解析。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> num = <span class="built_in">parseInt</span>(<span class="string">'0xAF'</span>, <span class="number">16</span>); <span class="comment">//175</span></div><div class="line"><span class="comment">//传入基数后，可以不加前缀0x</span></div><div class="line"><span class="keyword">var</span> num2 = <span class="built_in">parseInt</span>(<span class="string">'AF'</span>, <span class="number">16</span>); <span class="comment">//175</span></div><div class="line"><span class="keyword">var</span> num3 = <span class="built_in">parseInt</span>(<span class="string">'AF'</span>); <span class="comment">//NaN 未传入基数</span></div></pre></td></tr></table></figure>
+<p><strong>parseFloat()</strong>: 始终会忽略前导的0，只解析十进制数值，而且如果转化后的小数满足转化成整数的原则的话，会自动转化为整数: ‘1.’=&gt; 1, ‘11.0’=&gt;11    </p>
+<p>暂时更到这里，明天继续。</p>
+<h3 id="String类型"><a href="#String类型" class="headerlink" title="String类型"></a>String类型</h3><h4 id="表示"><a href="#表示" class="headerlink" title="表示"></a>表示</h4><p>单引号or双引号，前后统一。 单引号使用较多，见如下情况：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> tpl = <span class="string">'&lt;div class="container"&gt;'</span> + content + <span class="string">'&lt;/div&gt;'</span>;</div><div class="line"><span class="comment">//如果用了双引号，那么在class处的双引号就会把字符串分割。</span></div></pre></td></tr></table></figure>
+<h4 id="转义"><a href="#转义" class="headerlink" title="转义"></a>转义</h4><p><code>/n</code>：换行， <code>\&#39;</code> or <code>\&quot;</code> 单引号，双引号。 <code>\unnnn</code>以十六进制代码nnnn代表一个Unicode字符.    </p>
+<p>任何字符串的长度都可以通过访问<code>length</code>属性取得，要注意的是如果字符串包含<strong>双字节</strong>字符，那么<code>length</code><strong>可能</strong>不会精确的返回字符串中的字符数目。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> testStr = <span class="string">'猜猜我的长度是多少hahaha？'</span>;</div><div class="line"><span class="built_in">console</span>.log(testStr.length); <span class="comment">//16</span></div></pre></td></tr></table></figure>
+<h4 id="不可变"><a href="#不可变" class="headerlink" title="不可变"></a>不可变</h4><p>字符串一旦创建，它们的值就不能改变，我们所见到的变量保存字符串的重新赋值，其实是已经销毁了以前的字符串.</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> str = <span class="string">'Old one'</span>; </div><div class="line">str += <span class="string">'I am a new one'</span>;</div><div class="line"><span class="comment">// 创建一个新的字符串能够容纳以前的字符串+现在增加的字符串，填充内容。</span></div><div class="line"><span class="comment">// 销毁以前的字符串</span></div></pre></td></tr></table></figure>
+<h4 id="转换"><a href="#转换" class="headerlink" title="转换"></a>转换</h4><p>第一种方式： <code>toString()</code></p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> age = <span class="number">25</span>;</div><div class="line"><span class="keyword">var</span> ageStr = age.toString(); <span class="comment">//'25'</span></div><div class="line"><span class="keyword">var</span> _age = <span class="number">10</span>;</div><div class="line"><span class="keyword">var</span> binaryStr = _age.toString(<span class="number">2</span>); <span class="comment">// '1010' 可以传入进制数使数字在被转换时转换成相应的进制</span></div><div class="line"></div><div class="line"><span class="comment">//如果值是undefined，返回undefined。</span></div><div class="line"><span class="comment">//如果是null，返回null。</span></div><div class="line"><span class="comment">//如果值具有toString方法，调用并返回相应的结果。</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> value;</div><div class="line">value.toString(); <span class="comment">//undefined;</span></div><div class="line"><span class="keyword">var</span> value2 = <span class="literal">null</span>;</div><div class="line">value2.toString(); <span class="comment">//null;</span></div><div class="line"><span class="keyword">var</span> date = <span class="keyword">new</span> <span class="built_in">Date</span>();</div><div class="line"><span class="built_in">console</span>.log( date.toString() ); <span class="comment">//"Wed Mar 08 2017 14:32:31 GMT+0800 (CST)"</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> foo = &#123;</div><div class="line">	toString() &#123;</div><div class="line">		<span class="keyword">return</span> <span class="string">'foo'</span>;</div><div class="line">	&#125;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log( foo + <span class="string">' bar'</span> ); <span class="comment">// foo bar</span></div></pre></td></tr></table></figure>
+<p>第二种方式： 使用加号(<code>+</code>)操作符，将某个值跟另一个字符串加在一起，就会将这个值转换为字符串。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> age = <span class="number">25</span>;</div><div class="line"><span class="keyword">var</span> str = age + <span class="string">''</span>;</div><div class="line"><span class="built_in">console</span>.log(str, <span class="keyword">typeof</span> str); <span class="comment">//'25', 'string'</span></div></pre></td></tr></table></figure>
+<h3 id="包装类型"><a href="#包装类型" class="headerlink" title="包装类型"></a>包装类型</h3><p>Boolean, Number, String也属于特殊的引用类型，它们同时也具有各自基本类型的特殊行为，在每读取一个基本类型值的时候，后台就会建立一个对应的<code>基本包装类型</code>的对象（作为引用类型的由来），可以让我们调用一些方法来操作这些数据。    </p>
+<p>看个例子：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">let</span> s1 = <span class="string">'i am a string'</span>;</div><div class="line"><span class="keyword">let</span> s2 = s1.substring(<span class="number">7</span>);</div></pre></td></tr></table></figure>
+<p>我们知道s1是一个字符串，那它理应属于原始类型数据，那我们又何从调用一个方法呢？其实在第二行代码后台访问s1的时候，会处于一种<strong>读取模式</strong>，即从内存中读取这个字符串的值，而在读取模式中，后台也会自动完成以下三个步骤：    </p>
+<ol>
+<li>创建String类型的一个实例。</li>
+<li>在实例上调用指定的方法。</li>
+<li>销毁这个实例。</li>
+</ol>
+<p>可以看作是隐式执行了如下代码：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">let</span> s1 = <span class="keyword">new</span> <span class="built_in">String</span>(<span class="string">'i am a string'</span>);</div><div class="line"><span class="keyword">let</span> s2 = s1.substring(<span class="number">7</span>);</div><div class="line">s1 = <span class="literal">null</span>;</div></pre></td></tr></table></figure>
+<p>还记得我们之前说过，javascript的一切都是对象，这句话是没错的，就是因为存在对于基本类型的包装对象，只是我们很难明显的察觉到它。    </p>
+<p>我们也可以显式的调用String, Number, Boolean来创建一个基本包装类型的对象，但是这样的做法是不推荐的，因为这样让我们很难分清我们到底是在对于原始数据类型进行操作，还是对引用类型进行操作。所以不是绝对必要的情况下，还是使用字面量的形式创建。     </p>
+<p>我们也可以使用Object创建基本包装类型对象，而Object会自动识别传入值的类型而返回相应的基本包装类型的实例，见如下代码：     </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">let</span> str_obj = <span class="keyword">new</span> <span class="built_in">Object</span>(<span class="string">'hunger'</span>);</div><div class="line"><span class="built_in">console</span>.log ( str_obj <span class="keyword">instanceof</span> <span class="built_in">String</span></div></pre></td></tr></table></figure>
+<p>要注意的是，使用new调用基本类型的构造函数，与直接调用同名的<strong>转型函数</strong>是不一样的：     </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">let</span> num = <span class="built_in">Number</span>(<span class="string">'92'</span>);</div><div class="line"><span class="built_in">console</span>.log ( <span class="keyword">typeof</span> num ); <span class="comment">//number; num保存着原始类型</span></div><div class="line"></div><div class="line"><span class="keyword">let</span> num2 = <span class="keyword">new</span> <span class="built_in">Number</span>(<span class="number">92</span>); <span class="comment">//可以传入字符串</span></div><div class="line"><span class="built_in">console</span>.log( <span class="keyword">typeof</span> num2 ); <span class="comment">// object; num2保存着Number的实例</span></div><div class="line"></div><div class="line"><span class="built_in">console</span>.log( <span class="built_in">Object</span>.prototype.toString.call(num) == <span class="built_in">Object</span>.prototype.toString.call(num2) ); <span class="comment">// true</span></div><div class="line"><span class="comment">//可见在进行类型判断时，使用Object.prototype.toString.call()更为稳妥。</span></div><div class="line"><span class="comment">//实际上Object、Array、Date和RegExp，这些引用类型都是 JavaScript 的内置对象。typeof运算符在判断这些引用类型时全都返回"object"。</span></div></pre></td></tr></table></figure>
+<p>那么，对于基础类型和复杂类型，它们的区别是什么呢？<br>基础类型保存的是一个值，而复杂类型保存的是内存地址，通过访问内存地址，我们可以接触到里面的基础类型所保存的值。在传递时，基础类型直接传递值，而复杂类型直接传递内存地址，也就是我们所说的：引用。当我们使用引用传递时，通过变量访问这些地址，从而进行一些修改，无论这些引用地址被传递给多少个变量，通过其中任何一个进行修改，都会使堆内存中保存的对象发生相应变化。    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">let</span> obj = &#123; <span class="string">"a"</span>: <span class="number">1</span>, <span class="string">"b"</span> : <span class="number">2</span> &#125;; <span class="comment">// push a address to stack, and was placed in heap.</span></div><div class="line"><span class="keyword">let</span> a = <span class="number">1</span>; <span class="comment">//push to stack, above the obj.</span></div><div class="line"><span class="keyword">let</span> b = <span class="number">2</span>; <span class="comment">// push to stack, above the a.</span></div></pre></td></tr></table></figure>
+<p><img src="https://ww2.sinaimg.cn/large/006tNc79gw1fbky6eib1pj30r80dodgy.jpg" alt=""></p>
+<blockquote>
+<p>JavaScript中的内存也分为栈内存和堆内存。一般来说，栈内存中存放的是存储对象的地址，而堆内存中存放的是存储对象的具体内容。对于原始类型的值而言，其地址和具体内容都存在与栈内存中；而基于引用类型的值，其地址存在栈内存，其具体内容存在堆内存中。堆内存与栈内存是有区别的，栈内存运行效率比堆内存高，空间相对推内存来说较小，反之则是堆内存的特点。所以将构造简单的原始类型值放在栈内存中，将构造复杂的引用类型值放在堆中而不影响栈的效率。</p>
+</blockquote>
+<h3 id="Object类型"><a href="#Object类型" class="headerlink" title="Object类型"></a>Object类型</h3><p>它是一组数据和功能的集合，可以通过执行new操作符后跟要创建的对象类型的名称来创建。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> o = <span class="keyword">new</span> <span class="built_in">Object</span>();</div></pre></td></tr></table></figure>
+<p>它有一些属性和方法，我们会在后面的引用类型专题详细说：</p>
+<ul>
+<li>constructor: 保存着用于创建当前对象的函数</li>
+<li>hasOwnProperty(propertyName): 用于检查某个属性在当前对象的<strong>实例</strong>中而不是在实例的原型中，传入的参数必须是字符串形式。</li>
+<li>isPrototypeOf(object): 用于检查传入的对象是否是当前对象的原型。</li>
+<li>propertyIsEnumerable(propertyName): 用于检查给定的属性是否能够在for-in语句中被枚举出来。</li>
+<li>toLocaleString(): 返回对象的字符串表示，这个字符串跟执行环境的地区对应。</li>
+<li>toString()</li>
+<li>valueOf: 返回对象的字符串，数值或布尔表示，通常与toString的返回值相同，之前我们提到过如果使用Number进行转型时也会先调用valueOf方法。</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">let</span> obj = &#123;</div><div class="line">	<span class="attr">valueOf</span>: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">		<span class="keyword">return</span> <span class="string">'666'</span>;</div><div class="line">	&#125;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">let</span> objNum = <span class="built_in">Number</span>(obj);</div><div class="line"><span class="built_in">console</span>.log(objNum); <span class="comment">//666</span></div></pre></td></tr></table></figure>
+<h1 id="操作符"><a href="#操作符" class="headerlink" title="操作符"></a>操作符</h1><h3 id="一元操作符"><a href="#一元操作符" class="headerlink" title="一元操作符"></a>一元操作符</h3><figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//自加</span></div><div class="line"><span class="keyword">var</span> age = <span class="number">25</span>;</div><div class="line"><span class="built_in">console</span>.log( <span class="string">'Next year I will be '</span> + (++age) + <span class="string">' years old'</span>); <span class="comment">// "Next year I will be 26years old"</span></div><div class="line"><span class="keyword">var</span> _age = <span class="number">25</span>;</div><div class="line"><span class="built_in">console</span>.log( <span class="string">'This year I am '</span> + (_age++) + <span class="string">' years old, and next year I will be '</span> + _age ); <span class="comment">//"This year I am 25 years old, and next year I will be 26"</span></div><div class="line"><span class="comment">//同理自减，操作符在前后决定了操作是在计算之前或之后进行。</span></div></pre></td></tr></table></figure>
+<h3 id="布尔操作符"><a href="#布尔操作符" class="headerlink" title="布尔操作符"></a>布尔操作符</h3><h4 id="逻辑非"><a href="#逻辑非" class="headerlink" title="逻辑非"></a>逻辑非</h4><ul>
+<li>如果操作数是一个对象，返回false.</li>
+<li>如果操作数是一个空字符串，返回true.</li>
+<li>如果操作数是一个非空字符串，返回false.</li>
+<li>如果操作数是数值0，返回true.</li>
+<li>如果操作数是任意非0数值，返回false.</li>
+<li>如果操作数是null,返回true.</li>
+<li>如果操作数是NaN，返回true.</li>
+<li>如果操作数是undefined，返回true.</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//前面提过：同时使用两个逻辑非操作符，就会模拟Boolean()转型函数的行为，将其转化成一个boolean类型的值</span></div><div class="line"></div><div class="line">alert(!!<span class="string">"blue"</span>); <span class="comment">//true</span></div><div class="line"></div><div class="line">[] == <span class="literal">false</span>; <span class="comment">//</span></div></pre></td></tr></table></figure>
+<h4 id="逻辑与"><a href="#逻辑与" class="headerlink" title="逻辑与"></a>逻辑与</h4><figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//Returns expr1 if it can be converted to false; otherwise, returns expr2.</span></div><div class="line"></div><div class="line"><span class="comment">//注意： 逻辑与并不是对前后两个值求boolean结合值</span></div><div class="line"></div><div class="line"><span class="comment">//第一个操作数如果是对象，返回第二个操作数</span></div><div class="line"><span class="built_in">console</span>.log( &#123;&#125; &amp;&amp; <span class="literal">undefined</span> ); <span class="comment">//不是返回false，返回undefined</span></div><div class="line"></div><div class="line"><span class="comment">//有一个操作数为null，就返回null</span></div><div class="line"><span class="built_in">console</span>.log ( <span class="literal">true</span> &amp;&amp; <span class="literal">null</span> ); <span class="comment">//null</span></div><div class="line"></div><div class="line"><span class="comment">//有一个操作数为NaN，就返回NaN</span></div><div class="line"><span class="built_in">console</span>.log( <span class="built_in">parseInt</span>(<span class="string">'haha123'</span>) &amp;&amp; <span class="literal">null</span> ); <span class="comment">//NaN</span></div><div class="line"></div><div class="line"><span class="comment">//短路特性：如果第一个操作数能够决定结果，那么就不会再对第二个操作数求值</span></div><div class="line"><span class="built_in">console</span>.log( <span class="literal">NaN</span> &amp;&amp; <span class="literal">null</span> ); <span class="comment">//NaN</span></div><div class="line"><span class="built_in">console</span>.log( <span class="literal">null</span> &amp;&amp; <span class="literal">NaN</span> ); <span class="comment">//null </span></div><div class="line"></div><div class="line"><span class="comment">//未定义的值不能进行操作</span></div><div class="line"><span class="keyword">var</span> unknown;</div><div class="line"><span class="built_in">console</span>.log( unknown &amp;&amp; undefinedVariable ); <span class="comment">//error</span></div><div class="line"></div><div class="line"><span class="comment">//利用短路特性</span></div><div class="line"><span class="keyword">var</span> unknown = <span class="literal">false</span>;</div><div class="line"><span class="built_in">console</span>.log( unknown &amp;&amp; undefinedVariable ); <span class="comment">//false</span></div></pre></td></tr></table></figure>
+<h4 id="逻辑或"><a href="#逻辑或" class="headerlink" title="逻辑或"></a>逻辑或</h4><figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//Returns expr1 if it can be converted to true; otherwise, returns expr2. </span></div><div class="line"></div><div class="line"><span class="comment">//如果第一个操作数是对象，则返回第一个操作数</span></div><div class="line"><span class="built_in">console</span>.log( [] || <span class="literal">false</span> ); <span class="comment">//[]</span></div><div class="line"></div><div class="line"><span class="built_in">console</span>.log( <span class="keyword">new</span> <span class="built_in">Object</span>() &amp;&amp; <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125; );</div></pre></td></tr></table></figure>
+<p>||经常用来设置默认值:</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">Student</span> (<span class="params">name, age, skill</span>) </span>&#123;</div><div class="line">	<span class="keyword">this</span>.name = name;</div><div class="line">	<span class="keyword">this</span>.age = age || alert(<span class="string">'请必须提供年龄'</span>);</div><div class="line">	<span class="keyword">this</span>.skill = skill || <span class="string">'暂未提供技能'</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> me = <span class="keyword">new</span> Student(<span class="string">'kyle'</span>, <span class="string">'25'</span>); <span class="comment">//必须提供年龄</span></div><div class="line"><span class="built_in">console</span>.log (me.skill); <span class="comment">//暂未提供技能</span></div><div class="line"></div><div class="line"><span class="comment">//这个技巧在之后我们还会频繁使用</span></div></pre></td></tr></table></figure>
+<h4 id="加性操作符"><a href="#加性操作符" class="headerlink" title="加性操作符"></a>加性操作符</h4><p><strong>PITFALL ALERT</strong></p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> num1 = <span class="number">10</span>;</div><div class="line"><span class="keyword">var</span> num2 = <span class="number">5</span>;</div><div class="line"><span class="keyword">var</span> message = <span class="string">"The sum of num1 and num2 is "</span> + num1 + num2;</div><div class="line"><span class="built_in">console</span>.log(message); <span class="comment">//The sum of num1 and num2 is 105</span></div><div class="line"><span class="comment">//变成了字符串相加， 我们必须用括号将这个运算括起来</span></div></pre></td></tr></table></figure>
+<h4 id="减性操作符"><a href="#减性操作符" class="headerlink" title="减性操作符"></a>减性操作符</h4><figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//对一个字符串数字进行-0，可以将其转换为数字</span></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'10'</span><span class="number">-0</span>, <span class="keyword">typeof</span> (<span class="string">'10'</span><span class="number">-0</span>)); <span class="comment">// 10 "number"</span></div></pre></td></tr></table></figure>
+<h4 id="关系操作符"><a href="#关系操作符" class="headerlink" title="关系操作符"></a>关系操作符</h4><figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">// 如果两个操作符都是数值，则进行数值比较</span></div><div class="line"><span class="comment">// 如果两个操作符都是字符串，则比较两个字符串对应的字符编码值</span></div><div class="line"><span class="built_in">console</span>.log ( <span class="string">'a'</span> &lt; <span class="string">'b'</span> ); <span class="comment">//true</span></div><div class="line"><span class="built_in">console</span>.log ( <span class="string">'a'</span> &gt; <span class="string">'z'</span> ); <span class="comment">//false </span></div><div class="line"><span class="comment">// 如果一个操作数是数值，则将另一个操作数转换为一个数值，再进行数值比较</span></div><div class="line"><span class="built_in">console</span>.log( <span class="string">'23'</span> &lt; <span class="number">3</span> ); <span class="comment">//false</span></div><div class="line"><span class="built_in">console</span>.log( <span class="string">'23'</span> &lt; <span class="string">'3'</span>); <span class="comment">//true</span></div></pre></td></tr></table></figure>
+<h4 id="相等操作符"><a href="#相等操作符" class="headerlink" title="相等操作符"></a>相等操作符</h4><p>非严格相等： </p>
+<ul>
+<li>如果有一个操作数是布尔值，在比较相等性之前先将其转化为数值: <code>false</code>转换为<code>0</code>，而<code>true</code>转换成<code>1</code>.</li>
+<li>如果一个操作数是字符，另一个操作数是数值，在比较相等性之前先将<strong>字符串转换为数值</strong></li>
+<li>如果一个操作数是对象，另一个操作数不是，则调用对象的valueOf()，转化成基本类型值以后再去比较。 （转化成原始值）</li>
+<li>如果二者都是对象，则比较它们是不是同一个对象，如果两个操作数都指向同一个对象，则相等操作返回ture.</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="built_in">console</span>.log([<span class="literal">null</span> !== <span class="literal">undefined</span>, <span class="literal">null</span> == <span class="literal">undefined</span>]); <span class="comment">//true, true</span></div><div class="line"></div><div class="line"><span class="built_in">console</span>.log([<span class="string">'1'</span> == <span class="number">1</span>, [] == <span class="number">0</span>, <span class="string">''</span> == <span class="number">0</span>, <span class="number">0</span> == <span class="literal">false</span>, <span class="number">1</span> == <span class="literal">true</span>]); <span class="comment">//[true, true, true, true, true]</span></div><div class="line"></div><div class="line"><span class="built_in">console</span>.log([<span class="literal">NaN</span> != <span class="literal">NaN</span>]); <span class="comment">//[true]</span></div><div class="line"></div><div class="line"><span class="comment">//如果一个操作数是对象，另一个不是，则调用对象的valueOf()，转化成基本类型值以后再去比较。</span></div></pre></td></tr></table></figure>
+<p>严格相等</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//常用于作参数检测，要求类型和值都相等</span></div><div class="line"><span class="comment">//如果一个操作数是字符串，另一个操作数是数值，在比较相等性之前先将字符串转换为数值</span></div><div class="line"><span class="built_in">console</span>.log( <span class="string">'10'</span> == <span class="number">10</span>); <span class="comment">//true</span></div><div class="line"><span class="built_in">console</span>.log( <span class="string">'10'</span> === <span class="number">10</span>); <span class="comment">//false</span></div><div class="line"></div><div class="line"><span class="comment">//在switch语句中的case判定使用的便是严格相等'==='</span></div><div class="line"><span class="keyword">var</span> i = <span class="string">'10'</span>;</div><div class="line"><span class="keyword">switch</span>(i) &#123;</div><div class="line">    <span class="keyword">case</span> <span class="number">10</span>:</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'是一个数字'</span>);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    <span class="keyword">case</span> <span class="string">'10'</span>:</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'是一个字符串'</span>);</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">    <span class="keyword">default</span>: </div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'没有匹配到结果'</span>);</div><div class="line">&#125; <span class="comment">//"是一个字符串"</span></div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//结合上面的内容看一道题</span></div><div class="line"></div><div class="line"><span class="built_in">console</span>.log([[]==<span class="literal">false</span>, []==![]]); </div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">// 答案是[ true,true ]</span></div><div class="line"><span class="comment">// 当相等操作符的一边有布尔值的时候，将布尔值转换成数字</span></div><div class="line"><span class="comment">// [] == false =&gt; [] == 0;</span></div><div class="line"><span class="comment">// 当操作数有一个是对象，另一个不是，则将对象转化为原始值,先调用valueOf,再调用toString</span></div><div class="line"><span class="comment">// [] == 0 =&gt; '' == 0;</span></div><div class="line"><span class="comment">// 如果一个操作数是字符串，另外一个是数值，则在比较之前先把字符串转化为数值</span></div><div class="line"><span class="comment">// '' == 0 =&gt; 0 == 0 =&gt; true</span></div><div class="line"></div><div class="line"><span class="comment">// 逻辑非： 如果操作数是对象，返回false</span></div><div class="line"><span class="comment">// [] == false 同上。</span></div></pre></td></tr></table></figure>
+
+                <hr>
+                
+                <!-- 多说 Share start -->
+                <div class="ds-share"
+                     style="text-align: right"
+                     data-thread-key="2017/03/07/JS-Accumulate-from-0/"
+                     data-title="JS: Accumulate from 0系列之变量&amp;操作符"
+                     data-url="http://kylewh.github.io/2017/03/07/JS-Accumulate-from-0/"
+                     data-images="http://kylewh.github.io/2017/03/07/JS-Accumulate-from-0//book.jpg"
+                     data-content="
+本文内容讲述JS里最基本的知识：变量 和 操作符
+
+变量的声明变量的声明有三种方法： var... | Kyle&#39;s blog ">
+                    <div class="ds-share-inline">
+                        <ul class="ds-share-icons-16">
+                            <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                            <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                            <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                            <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                        </ul>
+                        <div class="ds-share-icons-more">
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+                <!-- 多说 Share end-->
+                
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2017/03/08/JS-Accumulate-from-0系列之function/" data-toggle="tooltip" data-placement="top"
+                           title="JS: Accumulate from 0系列之function">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2017/01/03/CommonJS-AMD-CMD浅析/" data-toggle="tooltip" data-placement="top"
+                           title="CommonJS & AMD & CMD浅析">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread"
+                         data-thread-key="2017/03/07/JS-Accumulate-from-0/"
+                         data-title="JS: Accumulate from 0系列之变量&amp;操作符"
+                         data-url="http://kylewh.github.io/2017/03/07/JS-Accumulate-from-0/">
+                    </div>
+                </div>
+                <!-- 多说评论框 end -->
+                
+
+                
+
+            </div>
+
+            <div class="col-lg-2 col-lg-offset-0 visible-lg-block sidebar-container catalog-container">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#变量的声明"><span class="toc-text">变量的声明</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#数据类型"><span class="toc-text">数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#typeof操作符"><span class="toc-text">typeof操作符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Undefined类型"><span class="toc-text">Undefined类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Null类型"><span class="toc-text">Null类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Boolean类型"><span class="toc-text">Boolean类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#falsy-value"><span class="toc-text">falsy value</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Number类型"><span class="toc-text">Number类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#浮点值"><span class="toc-text">浮点值</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#数值转换"><span class="toc-text">数值转换</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#String类型"><span class="toc-text">String类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#表示"><span class="toc-text">表示</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#转义"><span class="toc-text">转义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#不可变"><span class="toc-text">不可变</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#转换"><span class="toc-text">转换</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#包装类型"><span class="toc-text">包装类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Object类型"><span class="toc-text">Object类型</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#操作符"><span class="toc-text">操作符</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#一元操作符"><span class="toc-text">一元操作符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#布尔操作符"><span class="toc-text">布尔操作符</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#逻辑非"><span class="toc-text">逻辑非</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#逻辑与"><span class="toc-text">逻辑与</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#逻辑或"><span class="toc-text">逻辑或</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#加性操作符"><span class="toc-text">加性操作符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#减性操作符"><span class="toc-text">减性操作符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#关系操作符"><span class="toc-text">关系操作符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#相等操作符"><span class="toc-text">相等操作符</span></a></li></ol></li></ol></li></ol></li></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5 class="text-center">
+                        <a href="/tags/">FEATURED TAGS</a>
+                    </h5>
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#JS"
+                           title="JS">JS</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
+    </div>
+</article>
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    // dynamic User by Hux
+    var _user = 'kylewh';
+
+    // duoshuo comment query.
+    var duoshuoQuery = {short_name: _user};
+    (function () {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';
+        ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+</script>
+<!-- 多说公共JS代码 end -->
+
+
+
+
+
+<!-- Footer -->
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <br>
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/kylevon">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/kylewh">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; KYLEWH 2017
+                    <br>
+                    <span id="busuanzi_container_site_pv" style="font-size: 12px;">PV: <span id="busuanzi_value_site_pv"></span> Times</span>
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://kylewh.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- swiftype -->
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install','null','2.0.0');
+</script>
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!--wechat title img-->
+<img class="wechat-title-img" src="http://om8hmotom.bkt.clouddn.com/2017-06-19-comic.jpeg">
+</body>
+
+</html>

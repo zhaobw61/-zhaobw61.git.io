@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="廖文浩在 Github 上的个人博客">
+    <meta name="keyword" content="null">
+    <meta name="theme-color" content="#600090">
+    <meta name="msapplication-navbutton-color" content="#600090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#600090">
+    <link rel="shortcut icon" href="http://om8hmotom.bkt.clouddn.com/2017-06-19-comic.jpeg">
+    <link rel="alternate" type="application/atom+xml" title="KYLEWH" href="/atom.xml">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
+    <title>
+        
+        From Iterator To Async｜Kyle&#39;s blog
+        
+    </title>
+
+    <link rel="canonical" href="http://kylewh.github.io/2017/03/24/From-Iterator-To-Async/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/blog-style.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+</head>
+
+<style>
+
+    header.intro-header {
+        background-image: url('http://om8hmotom.bkt.clouddn.com/banner_2.jpg')
+    }
+</style>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="" class="animated fadeIn">
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
+" data-ishome = "false" >
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand animated pulse" href="/">
+                <span class="brand-logo">
+                    KYLEWH
+                </span>
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <!-- /.navbar-collapse -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+					
+                    
+                        
+							
+                        <li>
+                            <a href="/tags/">tags</a>
+                        </li>
+							
+						
+                    
+					
+					
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+//    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+<!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="http://om8hmotom.bkt.clouddn.com/book.jpg">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('http://om8hmotom.bkt.clouddn.com/book.jpg?imageView2/1/w/1400/h/400/interlace/1/q/90')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>From Iterator To Async</h1>
+                    
+                    <span class="meta">
+                         作者 Wenhao Liao
+                        <span>
+                          日期 2017-03-24
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                        <a class="tag" href="/tags/#JS"
+                           title="JS">JS</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="post-title-haojen">
+        <span>
+            From Iterator To Async
+        </span>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+                <blockquote>
+<p>代码是人脑逻辑的抽象体现，我们始终在真实发生的反直觉的逻辑与人脑逻辑的平衡中挣扎。 我们的顶层认知思维是单线程且倾向于顺序性的，这使得我们当遇到一些不得不打乱这种顺序和单任务执行的抽象逻辑时变的很迷惑，其中最”臭名昭著”的便是异步编程，它的内部机制和原始的代码抽象是非常反直觉的存在，让我们的大脑在一次次无可预期的报错中轰鸣。 作为编程语言的创造者，我们不断的在优化对于这些“魔性”过程的抽象代码，使得其更加类似于我们的思维过程，让它变得越来越有序，并具稳定性，可控性。 这一切的开始，就好似每一个新生的我们接触到数学时必须反复重复诵读的数字表一样： 1， 2， 3， 4， 5….</p>
+</blockquote>
+<h1 id="秩序之源：顺序"><a href="#秩序之源：顺序" class="headerlink" title="秩序之源：顺序"></a>秩序之源：顺序</h1><p>在所有语言里不可或缺的就是对于数据堆中的元数据的一一获取与处理，<strong>循环</strong>的方式是最粗暴简单有效的方式，然而追求优雅的我们不满足于这种看起来略显“粗糙”的表达方法，封装了更优雅的遍历API，在js中，诸如Array.prototype系列的<code>forEach</code>，<code>map</code>，<code>reduce</code>，到Object系列的<code>for..in</code>，让我们的代码更具简洁达意。    </p>
+<h2 id="Loop-amp-traverse"><a href="#Loop-amp-traverse" class="headerlink" title="Loop &amp; traverse"></a>Loop &amp; traverse</h2><figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>]</div><div class="line">		len = arr.length,</div><div class="line">		i;</div><div class="line">		</div><div class="line"><span class="keyword">for</span>(i = <span class="number">0</span>; i&lt;len; i++) &#123;</div><div class="line">	<span class="comment">//do sth with arr[i]</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//Everything seems better;</span></div><div class="line"><span class="comment">//抽象出这个处理的逻辑，以备复用</span></div><div class="line"><span class="keyword">var</span> doubleIt = <span class="function">(<span class="params">num, idx, arr</span>) =&gt;</span> &#123;</div><div class="line">	arr[idx] = num*<span class="number">2</span>;</div><div class="line">&#125;</div><div class="line">arr.forEach(doubleIt); <span class="comment">//Looks better.</span></div><div class="line"><span class="comment">//我们总是倾向于在具体执行一些重复的逻辑时用最短小精悍的语句</span></div><div class="line"><span class="built_in">console</span>.log(arr); <span class="comment">//[2,4,6,8,10,12]</span></div></pre></td></tr></table></figure>
+<h1 id="难以抑制的控制欲"><a href="#难以抑制的控制欲" class="headerlink" title="难以抑制的控制欲"></a>难以抑制的控制欲</h1><p>然而对于一个过程的掌控不仅限于让其顺畅的运作起来，我们更加渴望的是控制遍历这个过程起停，我们可以再任意时刻观察到遍历的位置，并且让它停下来，并且在未来的某时再让其继续，如此反复直到遍历完毕。听起来好像是我们的控制欲一发不可收拾，而实际上这是实际问题对我们的警示————掌握控制权总是更好的选择，但有时也许我们应该把这些控制权隐藏起来（封装，以及后面会出现的控制信任问题）。 遍历的出现让我们预见了这个能力。    </p>
+<h2 id="Iterator"><a href="#Iterator" class="headerlink" title="Iterator"></a>Iterator</h2><p>首先我们来构造一个鸭子类型遍历器：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">fakeIterator</span> (<span class="params">array</span>) </span>&#123;</div><div class="line">	<span class="keyword">var</span> nextIdx = <span class="number">0</span>;</div><div class="line">	<span class="keyword">return</span> &#123;</div><div class="line">		<span class="attr">next</span>: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">			<span class="keyword">return</span> nextIdx &lt; array.length ? [value: array[nextIndex++], <span class="attr">done</span>: <span class="literal">false</span>] : [value: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">true</span>]</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> it = fakeIterator([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>]);</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">//&#123; value: 1, done: false &#125;</span></div><div class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">//&#123; value: 2, done: false &#125;</span></div><div class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">//&#123; value: 3, done: false &#125;</span></div><div class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">//&#123; value: 4, done: false &#125;</span></div><div class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">//&#123; value: 5, done: false &#125;</span></div><div class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">//&#123; value: 6, done: false &#125;</span></div><div class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">//&#123; value: undefined, done: true &#125;</span></div></pre></td></tr></table></figure>
+<p>我们可以注意到我们的鸭子遍历器传入一个参数是数组，这相当于为这个遍历器提供了<strong>数据结构</strong>，而这个鸭子遍历器为我们提供了访问其值的方式。 在ES6中，提供了iterator接口，它为所有数据结构提供统一的访问机制，当我们使用ES6的另一个新特性<code>for...of</code>时，会自动寻找iterator接口， 这个接口部署在数据结构的<code>Symbol.ietrator</code>属性，它是作为一个iterable的特征。当我们调用<code>Symbol.iterator</code>这个方法时，就会返回一个遍历器生成函数。    </p>
+<p>数组，一些类数组，set，map这四种数据结构都具有iterator接口。    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr2 = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>];</div><div class="line"><span class="keyword">var</span> it2 = arr2[<span class="built_in">Symbol</span>.iterator]();</div><div class="line"><span class="built_in">console</span>.log( it2.next() ); <span class="comment">//&#123;done:false, value:1&#125;</span></div><div class="line"><span class="keyword">for</span> (<span class="keyword">let</span> num <span class="keyword">of</span> arr2) &#123;</div><div class="line"><span class="comment">// 默认自带接口 等价于 for(let num of it2)</span></div><div class="line">	<span class="built_in">console</span>.log(num);</div><div class="line">&#125;<span class="comment">// 1,2,3,4</span></div></pre></td></tr></table></figure>
+<p>对于类数组对象，我们可以给其Symbol.iterator方法引用数组的iterator接口： </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> itObj = &#123;</div><div class="line">	<span class="number">0</span>: <span class="string">'a'</span>,</div><div class="line">	<span class="number">1</span>: <span class="string">'b'</span>,</div><div class="line">	<span class="number">2</span>: <span class="string">'c'</span>,</div><div class="line">	<span class="attr">length</span>: <span class="number">3</span>,</div><div class="line">	[<span class="built_in">Symbol</span>.iterator]: <span class="built_in">Array</span>.prototype[<span class="built_in">Symbol</span>.iterator] <span class="comment">// or [][Symbol.iterator]</span></div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">for</span> (<span class="keyword">let</span> item <span class="keyword">of</span> itObj) &#123;</div><div class="line">	<span class="built_in">console</span>.log(item);</div><div class="line">&#125; <span class="comment">// 'a', 'b', 'c'</span></div></pre></td></tr></table></figure>
+<p>如果对象是一个普通对象，那我们引用数组的iterator接口并不会生效（将上面对象的key改成非zero-based的字符串则这个对象将不再是类数组对象)，解决办法是我们必须手动定义Symbol.iterator方法，就像之前我们定义鸭子类型遍历器时一样。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> itObj2 = &#123;</div><div class="line">	<span class="attr">data</span>: [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>],</div><div class="line">	[<span class="built_in">Symbol</span>.iterator]() &#123;</div><div class="line">		<span class="keyword">const</span> self = <span class="keyword">this</span>;</div><div class="line">		<span class="keyword">let</span> index = <span class="number">0</span>;</div><div class="line">		<span class="keyword">return</span> &#123;</div><div class="line">			next() &#123; <span class="comment">//等同于 next: function()</span></div><div class="line">				<span class="keyword">if</span> ( index &lt; self.data.length ) &#123;</div><div class="line">					<span class="keyword">return</span> &#123; </div><div class="line">						<span class="attr">value</span>: self.data[index++],</div><div class="line">						<span class="attr">done</span>: <span class="literal">false</span></div><div class="line">					&#125;;</div><div class="line">				&#125; <span class="keyword">else</span> &#123;</div><div class="line">					<span class="keyword">return</span> &#123;<span class="attr">value</span>: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">true</span>&#125;</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;;</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">for</span> (<span class="keyword">let</span> item <span class="keyword">of</span> itObj2) &#123;</div><div class="line">  <span class="built_in">console</span>.log(item); <span class="comment">//1,2,3,4,5</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> iter2 = itObj2[<span class="built_in">Symbol</span>.iterator]();</div><div class="line"><span class="built_in">console</span>.log(iter2.next()); <span class="comment">//&#123;done: false, value:1&#125;</span></div></pre></td></tr></table></figure>
+<p><strong>How wonderful！！</strong>    </p>
+<p>这种<strong>push =&gt; out</strong>的机制一直是我们想要在程序中保持的，乍一看有点点像<strong>惰性求值</strong>？<strong>thunk</strong>？ 这些概念从脑子里闪过， 它们在编程史上的出现使得程序在运行期有了更好的<strong>‘颗粒感’</strong>，随之而来的就是更好的控制，可这一路上我们为之挣扎了很久…</p>
+<h1 id="深渊"><a href="#深渊" class="headerlink" title="深渊"></a>深渊</h1><p>我们恐惧一切无法预料的东西带来的不利，这让我们疯狂的想要尽可能控制它到来时造成的混乱。在远久的时代，我们需要一种机制，一种类似于延时触发的机制，<code>setTimeout</code>出现了：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> timer = setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">	<span class="built_in">console</span>.log(<span class="string">'hi there i am back'</span>);</div><div class="line">&#125;,<span class="number">1000</span>);</div><div class="line"><span class="comment">//do sth... 'maybe' we need 1000ms to finish it.</span></div><div class="line"></div><div class="line"><span class="comment">// 1000ms after, 'hi there i am back'</span></div></pre></td></tr></table></figure>
+<p>但是这只是基于时间量程的，且由于延迟执行的机制让我们也无法保证在1秒后event quene已经清空，所以这样的方式并不可靠，good luck.    </p>
+<p>许多过程我们并无法用时间给予统一的度量标准，我们想要一种机制，让其在做完任意事件后触发指定的事件，这也就是<strong>callback</strong>， 这种机制很有效的解决了时间的不确定性，在单步操作中非常有效。   </p>
+<p>它的机制是我们向一个会耗费一些时间的操作里传入回调函数，也就是我们希望它在运行完毕时执行的函数：   </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//用setTimeout模拟一个异步事件</span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">request</span>(<span class="params">url, callback</span>) </span>&#123;</div><div class="line">	<span class="keyword">var</span> filePool = &#123;</div><div class="line">		<span class="string">'file1'</span> : <span class="string">'file1 load successfully'</span>,</div><div class="line">		<span class="string">'file2'</span> : <span class="string">'file2 load successfully'</span></div><div class="line">	&#125;;</div><div class="line">	<span class="keyword">var</span> randomDelay = <span class="built_in">Math</span>.round(<span class="built_in">Math</span>.random() *<span class="number">2000</span>) + <span class="number">1000</span>;</div><div class="line">	setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">		callback(filePool[url]);</div><div class="line">	&#125;, randomDelay);</div><div class="line">&#125;</div><div class="line"></div><div class="line">request(<span class="string">'file2'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">res</span>)</span>&#123;</div><div class="line">	<span class="built_in">console</span>.log(<span class="string">'Callback function executed'</span>);</div><div class="line">  <span class="built_in">console</span>.log(res);</div><div class="line">&#125;); </div><div class="line"><span class="comment">//after random second.. </span></div><div class="line"><span class="comment">//Callback function executed</span></div><div class="line"><span class="comment">//file2 load successfully</span></div></pre></td></tr></table></figure>
+<h2 id="Callbackhell"><a href="#Callbackhell" class="headerlink" title="Callbackhell"></a>Callbackhell</h2><p>由以上的形式，我们如果需要将多个异步事件串联起来，那么将会是这样的形式： </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line">request(<span class="string">'file1'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">res1</span>)</span>&#123;</div><div class="line">	<span class="built_in">console</span>.log(res1);</div><div class="line">	request(<span class="string">'file2'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">res2</span>)</span>&#123;</div><div class="line">		<span class="built_in">console</span>.log(res2);</div><div class="line">		request(<span class="string">'file3'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">res2</span>)</span>&#123;</div><div class="line">			<span class="built_in">console</span>.log(res3);</div><div class="line">		&#125;);</div><div class="line">	&#125;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p><strong>OPPS!</strong> 这样看起来似乎不太雅观。诶等等，哟，这不就是大名鼎鼎的<strong>callback hell</strong>吗！ 我们必须意识到，回调地狱的深渊并不是<strong>缩进(indent)</strong>所造成的丑陋的代码这么简单，更深层次的限制在于：    </p>
+<p><strong>这种一环死扣一环的触发机制带给我们的是一种牢不可破的控制流程。我们给自己亲手戴上了脚镣和手铐。</strong>    </p>
+<p>我们无法自由的控制它的进程，无法跳过某一个过程，我们只能尽可能的手动的设置一些非常<strong>specific</strong>的代码去阻挠它的脚步（比如在某个回调中插入破坏力巨大的<code>return</code>， 或者<code>if(你丑){你走开}else{请进}</code> 这种丑陋的条件语句等）。     </p>
+<p>于是，我们的控制欲再次爆发。    </p>
+<p><strong><em>So just get out of my way you ugly and stubborn xxx!!!</em></strong>     </p>
+<p>(我还不知道该拿什么词形容它？顽固的XX？？)</p>
+<h2 id="Thunk"><a href="#Thunk" class="headerlink" title="Thunk"></a>Thunk</h2><p>这个名词诞生于60年代，这是一个关于“求值策略”的争论，我们到底是应该传入值的时候就立刻得到它，还是我们先将我们要的结果保存起来，当我们真正需要它的时候，索取。 （敲黑板，惰性的概念深入人心啊！）    </p>
+<p>它大概是这样的：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//我们有一个加法函数</span></div><div class="line"><span class="keyword">var</span> add = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">  <span class="keyword">return</span> [].slice.call(<span class="built_in">arguments</span>).reduce(<span class="function">(<span class="params">a,b</span>)=&gt;</span>a+b);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//thunk style</span></div><div class="line"><span class="keyword">var</span> thunk = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="keyword">return</span> add(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(thunk()); <span class="comment">//6</span></div></pre></td></tr></table></figure>
+<p>嗯，有人可能会问：这有什么卵用 = = ？ 其实这个问题让我回来我也不能很好的说清楚，有心得的同学可以指点指点我。 但是当问题到了异步范畴的时候，为了将一个异步请求+注入回调的过程抽象成一个更简洁的形式，它展现出了威力。     </p>
+<p>我们先来伪装一个AJAX请求：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//第一个参数是请求地址，第二个是回调函数</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">fakeAjax</span>(<span class="params">url, cb</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> fake_responses = &#123;</div><div class="line">        <span class="string">"file1"</span>: <span class="string">"The first text"</span>,</div><div class="line">        <span class="string">"file2"</span>: <span class="string">"The middle text"</span>,</div><div class="line">        <span class="string">"file3"</span>: <span class="string">"The last text"</span></div><div class="line">    &#125;;</div><div class="line">    <span class="comment">// 伪装随机请求时间 （就是这么粗暴..)</span></div><div class="line">    <span class="keyword">var</span> randomDelay = <span class="built_in">Math</span>.round(<span class="built_in">Math</span>.random() * <span class="number">2000</span>) + <span class="number">1000</span>;</div><div class="line">    </div><div class="line">    render(<span class="string">'Requesting: '</span> + url + <span class="string">', and this will take '</span> + randomDelay + <span class="string">'ms'</span>, <span class="string">'requesting'</span>);</div><div class="line">    </div><div class="line">    render(<span class="string">"Requesting: "</span> + url, <span class="string">'requesting'</span>);</div><div class="line">	</div><div class="line">		<span class="comment">// 伪装请求完毕执行回调函数</span></div><div class="line">    setTimeout(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">        cb(fake_responses[url]);</div><div class="line">    &#125;, randomDelay);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//为了更友好的可视化，我们将console替换为一个render函数</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">render</span>(<span class="params">text, className</span>) </span>&#123;</div><div class="line">    <span class="built_in">document</span>.body.innerHTML += <span class="string">'&lt;p class="'</span> + className + <span class="string">'"&gt;'</span> + text + <span class="string">'&lt;/p&gt;'</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后我们提一个需求，那就是我们想按顺序请求file1,file2,file3, 一旦它们请求完毕，立即打印，但是要按顺序。     </p>
+<p>整理一下思路，也就是说，这是一个遍历的过程，一旦遍历到没有请求返回的时候就break，然后就是不断的遍历。 遍历的触发点就是有任意一个请求返回。     </p>
+<p>有点感觉了吧？ 也就是说我们需要编写一个处理顺序&amp;打印消息的回调函数。    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//传入需要请求的文件地址组成的数组。</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">watchAndHandle</span>(<span class="params">fileList</span>) </span>&#123;</div><div class="line">	  <span class="comment">//用来存储请求信息</span></div><div class="line">    <span class="keyword">var</span> oResPool = &#123;&#125;;</div><div class="line">    <span class="keyword">var</span> aFileNames = fileList;</div><div class="line">	<span class="comment">//这个函数返回一个函数作为文件请求的回调</span></div><div class="line">	<span class="comment">//第二个参数为请求完毕执行回调时传入的response</span></div><div class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params">filename, contents</span>) </span>&#123;</div><div class="line">        <span class="comment">//如果对应文件的value被设为0，则代表请求已经完毕</span></div><div class="line">        <span class="keyword">if</span> (!(oResPool[filename] <span class="keyword">in</span> oResPool)) &#123;</div><div class="line">            render(<span class="string">'Finish: '</span> + filename + <span class="string">' is ready!'</span>, <span class="string">'ready'</span>);</div><div class="line">            oResPool[filename] = contents;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//遍历</span></div><div class="line">        <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; aFileNames.length; i++) &#123;</div><div class="line">            <span class="keyword">if</span> (aFileNames[i] <span class="keyword">in</span> oResPool) &#123;</div><div class="line">                <span class="keyword">if</span> (<span class="keyword">typeof</span> oResPool[aFileNames[i]] === <span class="string">'string'</span>) &#123;</div><div class="line">                    render(<span class="string">'Output: '</span> + oResPool[aFileNames[i]], <span class="string">'mes'</span>);</div><div class="line">                    oResPool[aFileNames[i]] = <span class="literal">false</span>;</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">		            <span class="comment">//如果对应文件没有请求完毕，结束循环。</span></div><div class="line">                render(<span class="string">'Block: But '</span> + aFileNames[i] + <span class="string">' is not ready yet.. continue waiting...'</span>,</div><div class="line">                    <span class="string">'not-ready'</span>)</div><div class="line">                <span class="keyword">return</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 遍历成功，所有文件都成功请求了，打印请求全部成功</span></div><div class="line">        render(<span class="string">'Complete :)!!'</span>, <span class="string">'suc'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在我们还有一件事没有处理，那就是我们压根还没使用thunk啊 = = ，没错，下面我们来看看用thunk能做些什么。    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">// Thunk style </span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">requestFile</span>(<span class="params">fileURL</span>) </span>&#123;</div><div class="line">    fakeAjax(fileURL, <span class="function"><span class="keyword">function</span> (<span class="params">text</span>) </span>&#123;</div><div class="line">		    <span class="comment">//调用上面的回调函数</span></div><div class="line">        handleResponse(fileURL, text);</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们可以使用这个thunk函数将对应文件请求的过程保存下来，然后，重点来了：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> handleResponse = watchAndHandle([<span class="string">"file1"</span>, <span class="string">"file2"</span>, <span class="string">"file3"</span>]);</div><div class="line">requestFile(<span class="string">'file1'</span>);</div><div class="line">requestFile(<span class="string">'file2'</span>);</div><div class="line">requestFile(<span class="string">'file3'</span>);</div></pre></td></tr></table></figure>
+<p>效果：   </p>
+<p><img src="http://om8hmotom.bkt.clouddn.com/2017-03-24-ugly_order_check-2.gif" alt=""></p>
+<p><strong><em>OMG, WHAT I JUST DID!</em></strong>    </p>
+<p>我们用三行synchronous的代码完成了一个带流程控制的三文件异步请求！？    </p>
+<p>现在我们可以看到thunk的威力，它封装了请求后的回调等一切复杂的逻辑(maybe)，我们只需要传入需要请求的文件地址即可。 尽管从技术的角度来看它也许只是一个装饰者， 但这不正是我们需要的吗？ 让我们的代码看起来更符合我们的思维流程。    </p>
+<h2 id="More-thunk"><a href="#More-thunk" class="headerlink" title="More thunk"></a>More thunk</h2><p>不过瘾，既然thunk可以封装回调处理的逻辑，那不如我们再看看其他的？    </p>
+<p>我们继续改造getFile函数：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line">    Create a active thunk ( immediately call )</div><div class="line">    Using closure to maintain state</div><div class="line">    These is only two scenarios here: </div><div class="line">    1. fakeAjax call callBack first. ---- we store the data sent back and wait runing with it.</div><div class="line">    2. thunk call callBack first.    ---- we store the cb and wait ajax to call it.</div><div class="line">*/</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">getFile</span>(<span class="params">file</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> text, fn;</div><div class="line"></div><div class="line">    fakeAjax(file, <span class="function"><span class="keyword">function</span> <span class="title">__responseHandler__</span>(<span class="params">responseMes</span>) </span>&#123;</div><div class="line">        <span class="keyword">if</span> (fn) fn(responseMes);</div><div class="line">        <span class="keyword">else</span> text = responseMes;</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> <span class="title">__callBackHandler__</span>(<span class="params">cb</span>) </span>&#123;</div><div class="line">        <span class="keyword">if</span> (text) cb(text);</div><div class="line">        <span class="keyword">else</span> fn = cb;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>HERE’S THE MAGIC！</strong>    </p>
+<p>我们来看看上面做了什么：    </p>
+<ul>
+<li>我们创造了一个立即调用异步请求的thunk(active thunk)函数。</li>
+<li>我们使用闭包来保存AJAX的请求状态，还有回调函数的传入状态。</li>
+<li>如果AJAX请求先完毕，但回调函数还未传入，那我们缓存它传回的信息。</li>
+<li>如果回调函数传入了，但AJAX还未请求完毕，那我们缓存这个回调函数。</li>
+</ul>
+<p>然后，一切顺理成章的融合在一起，形成了完美的互补，无论谁先被缓存，最后我们都会顺利的调用回调函数并且传入回调信息！    </p>
+<p>在看到这种方法之前，我从来没意识到还可以这样做，闭包果然是神器。    </p>
+<p>但是在进行实际的异步请求的时候它的问题又暴露了：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> thunk1 = getFile(<span class="string">'file1'</span>);</div><div class="line"><span class="keyword">var</span> thunk2 = getFile(<span class="string">'file2'</span>);</div><div class="line"><span class="keyword">var</span> thunk3 = getFile(<span class="string">'file3'</span>);</div><div class="line"></div><div class="line"><span class="comment">// What a powerful mechanism! Your code turn outs nice! </span></div><div class="line"><span class="comment">// But still stack in callback hell.</span></div><div class="line">thunk1(<span class="function"><span class="keyword">function</span> (<span class="params">responseOfFileOne</span>) </span>&#123;</div><div class="line">    render(<span class="string">'Output: '</span> + responseOfFileOne, <span class="string">'mes'</span>);</div><div class="line">    thunk2(<span class="function"><span class="keyword">function</span> (<span class="params">responseOfFileTwo</span>) </span>&#123;</div><div class="line">        render(<span class="string">'Output: '</span> + responseOfFileTwo, <span class="string">'mes'</span>);</div><div class="line">        thunk3(<span class="function"><span class="keyword">function</span> (<span class="params">responseOfFileThree</span>) </span>&#123;</div><div class="line">            render(<span class="string">'Output: '</span> + responseOfFileThree, <span class="string">'mes'</span>);</div><div class="line">            render(<span class="string">'Complete :)!!'</span>, <span class="string">'suc'</span>);</div><div class="line">        &#125;);</div><div class="line">    &#125;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>面目可憎的回调地狱！    </p>
+<p>但是这种尝试让我们更好的明白了thunk的意义： 函数形式的转化，对于状态的持有。     </p>
+<p>该死的异步，我们始终还是没能前进，直到….</p>
+<h1 id="击碎异步的桎梏"><a href="#击碎异步的桎梏" class="headerlink" title="击碎异步的桎梏"></a>击碎异步的桎梏</h1><p>在现实中，有一个场景大家很熟悉： 上课的时候，老师突然拿出一张表，说：从第一个开始，签名，然后传给下一个人。     </p>
+<p>等等，这不就是异步吗？ 每个人签名的时间是未知的，我们不知道多长时间后这张表会传给下一个人，而且还有可能出现别的情况比如下课了，老师说”别填了，下次继续“。    </p>
+<p>而这就是我们苦苦希望在code里实现的，在我们的脑海里，呈现出的应该是：   </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">第一位同学填表 其他同学等待</div><div class="line">第一位同学填表完毕</div><div class="line">第二位同学填表 其他同学等待</div><div class="line">第二位同学填表完毕</div><div class="line">第三位同学填表 其他同学等待</div></pre></td></tr></table></figure>
+<p>而我们的代码是：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">fillUpForm( A, tellNextOnetoContinue()&#123;</div><div class="line">	fillUpForm( B, tellNextOnetoContinue() &#123;</div><div class="line">		fillUpForm( C, tellNextOnetoContinue() &#123;</div><div class="line">			//......</div><div class="line">		&#125;)</div><div class="line">	&#125;)</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<p>就形式而言，前者是分离的代码块，就像老师布置的任务的具体化，而后者是一体的函数， 我们始终追求的解耦在后者面前简直是无稽之谈，为什么我们就是不能让我们的执行过程看起来跟老师的任务外形上更一致呢？ 于是，终于…. 我们等来了<strong>承诺</strong>。</p>
+<h2 id="Promise"><a href="#Promise" class="headerlink" title="Promise"></a>Promise</h2><p>什么是承诺？ 简单来说： 就是一个同学告诉老师，我填完了表就会传给下一个同学的，如果我填不完我也会告诉你为什么！    </p>
+<p>具体的API细节请参考： </p>
+<ul>
+<li><a href="http://liubin.org/promises-book/#chapter1-what-is-promise" target="_blank" rel="external">promise迷你书</a></li>
+<li><a href="http://es6.ruanyifeng.com/" target="_blank" rel="external">ECMAScript 6 入门 - 阮一峰</a></li>
+</ul>
+<p>它的形式大概是这样的：   </p>
+<ul>
+<li>创建一个<code>Promise</code>实例</li>
+<li>指定<code>resolve</code>处理函数与<code>reject</code>函数</li>
+<li>或者在事情做完的时候调用<code>resolve(传入回调信息)</code> or <code>reject(传入的错误/拒绝信息)</code></li>
+<li>使用<code>.then</code>指定第二步的内容</li>
+</ul>
+<p><strong>Show me the code:</strong>    </p>
+<p>我们现在来模拟一下这个填表的过程！<a href="http://jsbin.com/cepereqewa/edit?js,console" target="_blank" rel="external">jsbin</a></p>
+<figure class="highlight"><table><tr><td class="code"><pre><div class="line">var taskState = [];</div><div class="line">var studentId = 0;</div><div class="line"></div><div class="line">function doSthAsync() &#123;</div><div class="line">    return new Promise(function (resolve, reject) &#123;</div><div class="line">        //模拟填表的过程</div><div class="line">        var randomDelay = Math.round(Math.random()*1000) + 1000;</div><div class="line">        console.log(`学生$&#123;++studentId&#125;正在填表啦！大概耗时$&#123;randomDelay/1000&#125;秒`);</div><div class="line">        setTimeout(function __fillUpForm__() &#123;</div><div class="line">            resolve(`学生$&#123;studentId&#125;：老师我填完啦！我现在交给下一个同学咯。`);</div><div class="line">        &#125;, randomDelay);</div><div class="line">    &#125;);</div><div class="line">&#125;</div><div class="line">// Promise.resolve()可以返回一个promise对象并立即调用resolve并传入传入的参数。如果不传任何参数，可以充当一个promise chain的初始化。</div><div class="line"></div><div class="line">Promise.resolve('第一组的同学，大家依次填表哦，填完就传给下一个同学。')</div><div class="line">    .then(function (res) &#123;</div><div class="line">        console.log(res);</div><div class="line">        return doSthAsync();</div><div class="line">    &#125;)</div><div class="line">    .then(function (res1) &#123;</div><div class="line">        console.log(res1);</div><div class="line">        return doSthAsync();</div><div class="line">    &#125;)</div><div class="line">    .then(function (res2) &#123;</div><div class="line">        console.log(res2);</div><div class="line">        return doSthAsync();</div><div class="line">    &#125;)</div><div class="line">    .then(function (res3) &#123;</div><div class="line">        console.log(res3);</div><div class="line">        return doSthAsync();</div><div class="line">    &#125;)</div><div class="line">    .then(function (res4) &#123;</div><div class="line">        console.log(res4);</div><div class="line">        return doSthAsync();</div><div class="line">    &#125;)</div><div class="line">    .then(function (res5) &#123;</div><div class="line">        console.log(res5);</div><div class="line">        console.log('我们这一组填完啦！')</div><div class="line">    &#125;)</div></pre></td></tr></table></figure>
+<p>效果：  </p>
+<p><img src="http://om8hmotom.bkt.clouddn.com/2017-03-24-promise_student.gif" alt=""></p>
+<p>现在我们来回到之前我们的，异步请求文件的demo，我们现在可以将它改装一下了：   </p>
+<p>首先我们把getFile这个thunk-style修改一下，让它返回一个promise。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">getFile</span>(<span class="params">file</span>) </span>&#123;</div><div class="line">    <span class="comment">// what do we do here?</span></div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span> (<span class="params">resolve, reject</span>) </span>&#123;</div><div class="line">        fakeAjax(file, <span class="function"><span class="keyword">function</span> (<span class="params">response</span>) </span>&#123;</div><div class="line">            resolve(response);</div><div class="line">        &#125;);</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>接着是fakeAJAX：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">fakeAjax</span>(<span class="params">url, cb</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> fake_responses = &#123;</div><div class="line">        <span class="string">"file1"</span>: <span class="string">"The first text"</span>,</div><div class="line">        <span class="string">"file2"</span>: <span class="string">"The middle text"</span>,</div><div class="line">        <span class="string">"file3"</span>: <span class="string">"The last text"</span></div><div class="line">    &#125;;</div><div class="line">    <span class="keyword">var</span> randomDelay = <span class="built_in">Math</span>.round(<span class="built_in">Math</span>.random() * <span class="number">2000</span>) + <span class="number">1000</span>;</div><div class="line">    render(<span class="string">'Requesting: '</span> + url + <span class="string">', and this will take '</span> + randomDelay + <span class="string">'ms'</span>, <span class="string">'requesting'</span>);</div><div class="line">    render(<span class="string">"Requesting: "</span> + url, <span class="string">'requesting'</span>);</div><div class="line"></div><div class="line">    setTimeout(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">        cb(fake_responses[url]);</div><div class="line">    &#125;, randomDelay);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后我们来进行任务布置：   </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//回顾一下上面的填表的过程，我们在每一步同时做了两件事，我们应该更多的遵循一次做一件事的原则，于是请求文件我们拆分为了： </span></div><div class="line"><span class="comment">// 1. 请求文件</span></div><div class="line"><span class="comment">// 2. 渲染请求结果</span></div><div class="line"><span class="comment">// 3. 请求下一个文件</span></div><div class="line"></div><div class="line">getFile(<span class="string">'file1'</span>)</div><div class="line">    .then(<span class="function"><span class="keyword">function</span> (<span class="params">response1</span>) </span>&#123;</div><div class="line">        render(response1, <span class="string">'mes'</span>)</div><div class="line">    &#125;)</div><div class="line">    .then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">        <span class="keyword">return</span> getFile(<span class="string">'file2'</span>);</div><div class="line">    &#125;)</div><div class="line">    .then(<span class="function"><span class="keyword">function</span> (<span class="params">response2</span>) </span>&#123;</div><div class="line">        render(response2, <span class="string">'mes'</span>);</div><div class="line">    &#125;)</div><div class="line">    .then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">        <span class="keyword">return</span> getFile(<span class="string">'file3'</span>);</div><div class="line">    &#125;)</div><div class="line">    .then(<span class="function"><span class="keyword">function</span> (<span class="params">response3</span>) </span>&#123;</div><div class="line">        render(response3, <span class="string">'mes'</span>);</div><div class="line">    &#125;)</div><div class="line">    .then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">        render(<span class="string">"Complete!"</span>, <span class="string">'suc'</span>);</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>效果： <img src="http://om8hmotom.bkt.clouddn.com/2017-03-24-promise_chain.gif" alt=""></p>
+<p>至此我们已经取得了卓越的进步，还记得之前的脑海里的任务表吗？ 我们完全是按照那张表来书写代码的！     </p>
+<p>天啊，我们的大脑跟代码同步了！     </p>
+<p>要知道，当我们的大脑逻辑与代码逻辑编写出现冲突的时候，是最容易诞生bug的。     </p>
+<p>我们这样做不仅使我们像<strong>同步(synchronous)</strong>那样书写代码，同时背后控制住了<strong>异步(asynchronous)</strong>的逻辑！还有效避免了我们的思维发生混乱，还有…    </p>
+<p>恩恩，不能高兴的太早，我们再好好看看上面的code，似乎有点？重复？ 没错！ 为了遵循DRY原则，我们得想办法让它变得不这么重复，then…then…then…听起来让人烦躁。     </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">// More abstract &amp; flexible style</span></div><div class="line">[<span class="string">'file1'</span>, <span class="string">'file2'</span>, <span class="string">'file3'</span>]</div><div class="line">.map(getFile)</div><div class="line">    .reduce(<span class="function"><span class="keyword">function</span> (<span class="params">chain, filePromise</span>) </span>&#123;</div><div class="line">        <span class="keyword">return</span> chain.then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">            <span class="keyword">return</span> filePromise;</div><div class="line">        &#125;).then(<span class="function"><span class="keyword">function</span> (<span class="params">res</span>) </span>&#123;</div><div class="line">            render(res, <span class="string">'mes'</span>);</div><div class="line">        &#125;)</div><div class="line">    &#125;, <span class="built_in">Promise</span>.resolve())</div><div class="line">    .then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">        render(<span class="string">'Complete! :)'</span>, <span class="string">'suc'</span>);</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>恩…没错，迭代方法大显神威，我们使用<code>getFile</code>进行请求初始化并返回一个promise实例，组成一个promise数组。接着，考虑到我们总是在链接两个任务，我们可以使用<code>reduce</code>，<strong>但是别忘了我们必须传入一个初始值</strong>，还记得前面说的<code>Promise.resolve()</code>吗？ 我们让它来给我们开个头，从而我们能获得一条<strong>Promise chain</strong>，拿到这条链条后，我们分开做两件事： </p>
+<ul>
+<li>1.返回这个promise实例 （第一次时这是Promise.resolve()返回的实例)</li>
+<li>2.渲染这个promise实例的返回信息</li>
+</ul>
+<p>当所有的promise实例都resolved了，我们就渲染成功信息。</p>
+<p>效果：    </p>
+<p><img src="http://om8hmotom.bkt.clouddn.com/2017-03-24-promise_mapReduce.gif" alt=""></p>
+<p>有一个细节的差异： 我们发现三个文件的请求准备信息都在头部打印了出来，这是由于使用map的时候我们几乎是同时初始化返回了Promise实例，在getFile内部我们调用了render函数，所以导致这样的结果。但返回结果的渲染依然是按顺序的。    </p>
+<p>对于Promise其实还有一些其他有用的api，比如Promise.all()，它接受一个数组，这个数组的元素都是promise实例，从而将它们一起包装为一个新的promise实例。而对于它的功能表现是： 当所有的promise实例都resolved时，才会进行下一部(用then链接起来)    </p>
+<p>我们把上面的布置任务再改改变成这样：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="built_in">Promise</span>.all([<span class="string">'file1'</span>, <span class="string">'file2'</span>, <span class="string">'file3'</span>].map(getFile)).then(<span class="function"><span class="keyword">function</span> (<span class="params">reps</span>) </span>&#123;</div><div class="line">            reps.forEach(<span class="function"><span class="keyword">function</span> (<span class="params">msg</span>) </span>&#123;</div><div class="line">                render(msg, <span class="string">'mes'</span>);</div><div class="line">            &#125;)</div><div class="line">        &#125;).then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">            render(<span class="string">'Complete! :)'</span>, <span class="string">'suc'</span>);</div><div class="line">        &#125;);</div></pre></td></tr></table></figure>
+<p>效果：</p>
+<p><img src="http://om8hmotom.bkt.clouddn.com/2017-03-24-promise_all.gif" alt=""></p>
+<p>很清楚的看见最后的返回信息一次性按顺序渲染到文档里。</p>
+<p>哈哈哈哈哈，看看！从一开始到现在，我们的代码变的越来越简洁清晰。    </p>
+<p>回顾中，我们可以发现，当我们使用<code>map</code>,<code>reduce</code>进行<code>promise chaining</code>的时候，实际还做了一件事，那就是我们将上一个promise实例链接到下一个时的这个过程封装了，作为一段整体code，看起来外部我们并没有暴露任何这些promise中的其中一个的控制权，这一切都在内部进行了交接。     </p>
+<p><strong>Perfect！</strong> 我再也不用担心我的异步调用被一些不可预料的因素剥夺控制权了。关于控制权，请参考跟我英文同名的kyle胖的书 <strong>You don’t know JS</strong> 中异步那一章： <a href="https://rileygelwicks.gitbooks.io/you-dont-know-js/content/async%20&amp;%20performance/ch3.html" target="_blank" rel="external">Promise Trust</a>    </p>
+<h1 id="洁癖和偏执的控制欲"><a href="#洁癖和偏执的控制欲" class="headerlink" title="洁癖和偏执的控制欲"></a>洁癖和偏执的控制欲</h1><p>回头看看，常看常新，反思我们现在所企及的高度，我们的代码真的就这么完美了吗？    </p>
+<p>也许？？    </p>
+<p>又或者如果我的异步任务并不能总是这么走运的都是同一类型，能用统一的thunk函数进行map创造promise实例数组？    </p>
+<p>那岂不是我的代码就不得不出现成堆的then了…     </p>
+<p>没错，promise只是一个关于时间且thunk-style的<strong>wrapper</strong>，它只是改进了回调函数，提供了美好的API而已，不是吗？    </p>
+<p>看来我们如果需要更简洁的代码，也许我们得跨过<strong>.then</strong>.     </p>
+<h2 id="Generator"><a href="#Generator" class="headerlink" title="Generator"></a>Generator</h2><p><strong>Hey</strong>，还记得我们一开始提到的遍历器吗？ 当我们执行遍历器函数时，返回的本质是一个遍历对象。     </p>
+<p>Generator函数在运行后返回的也是这样一个遍历对象，我们来看看它的特征：（废话了当然是function关键字与name之间有朵花 = = ！ 其实是星号： *）    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span>* <span class="title">gen</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</div><div class="line">    <span class="keyword">yield</span> <span class="number">2</span>;</div><div class="line">    <span class="keyword">yield</span> <span class="number">3</span>;</div><div class="line">    <span class="keyword">yield</span> <span class="number">4</span>;</div><div class="line">    <span class="keyword">yield</span> <span class="number">5</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> go = gen(); <span class="comment">//???? 什么也没有发生。</span></div><div class="line"></div><div class="line"><span class="built_in">console</span>.log( <span class="keyword">typeof</span> go); <span class="comment">// object</span></div></pre></td></tr></table></figure>
+<p>所以generator函数执行过一次以后只是返回了一个Iterator对象而已，这个对象可以遍历函数内所有的yiled语句，函数每次都会在遇到yiled语句时停下来，直到我们使用next()函数让函数恢复执行并遇到下一个yiled时停下，以此反复，直到所有的yiled语句都已经被遍历过。    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span>* <span class="title">co</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</div><div class="line">    <span class="keyword">yield</span> <span class="number">2</span>;</div><div class="line">    <span class="keyword">yield</span> <span class="number">3</span>;</div><div class="line">    <span class="keyword">yield</span> <span class="number">4</span>;</div><div class="line">    <span class="keyword">yield</span> <span class="number">5</span>;</div><div class="line">&#125;</div><div class="line"><span class="comment">//既然本质都是遍历器对象，那么同样也可以使用for...of</span></div><div class="line"><span class="keyword">for</span> (<span class="keyword">let</span> key <span class="keyword">of</span> co()) &#123;</div><div class="line">    <span class="built_in">console</span>.log(key);</div><div class="line">&#125; <span class="comment">//1, 2, 3, 4, 5</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> c = co();</div><div class="line"><span class="built_in">console</span>.log(c.next()) <span class="comment">// &#123;done: true, value: 1&#125;</span></div><div class="line"><span class="built_in">console</span>.log(c.next())</div><div class="line"><span class="built_in">console</span>.log(c.next())</div><div class="line"><span class="built_in">console</span>.log(c.next())</div><div class="line"><span class="built_in">console</span>.log(c.next())</div><div class="line"><span class="built_in">console</span>.log(c.next()) <span class="comment">// 第六次是 &#123;done: true, value: undefined&#125;</span></div><div class="line"><span class="comment">//之后继续的话则总是done:true</span></div></pre></td></tr></table></figure>
+<p>具体细节请参考：   </p>
+<ul>
+<li><a href="http://es6.ruanyifeng.com/#docs/generator" target="_blank" rel="external">Generator 函数的语法 -阮一峰</a></li>
+</ul>
+<p>好了，我们这里不去讲太多语法细节，专注于我们的主线问题： 异步控制。     </p>
+<p>我们现在再来试着用generator函数来编写任务布置流程， 利用yield的”暂停“函数运行的效果，我们可以写出：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> gen = <span class="function"><span class="keyword">function</span>* (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> f1 = <span class="keyword">yield</span> getFile(<span class="string">'file1'</span>);</div><div class="line">    render(f1, <span class="string">'mes'</span>);</div><div class="line">    <span class="keyword">var</span> f2 = <span class="keyword">yield</span> getFile(<span class="string">'file2'</span>);</div><div class="line">    render(f2, <span class="string">'mes'</span>);</div><div class="line">    <span class="keyword">var</span> f3 = <span class="keyword">yield</span> getFile(<span class="string">'file3'</span>);</div><div class="line">    render(f3, <span class="string">'mes'</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> g = gen();</div></pre></td></tr></table></figure>
+<p>同样的同步写法，简单易懂，但是此刻我们要怎么让它一个个运行下去呢？    </p>
+<p>用gen.next()试试？     </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">// Manual chaining</span></div><div class="line">g.next().value.then(<span class="function"><span class="keyword">function</span>(<span class="params">data</span>)</span>&#123;</div><div class="line">    g.next(data).value.then(<span class="function"><span class="keyword">function</span>(<span class="params">data</span>)</span>&#123;</div><div class="line">        g.next(data).value.then(<span class="function"><span class="keyword">function</span>(<span class="params">data</span>)</span>&#123;</div><div class="line">            g.next(data);</div><div class="line">            render(<span class="string">'Complete! :)'</span>, <span class="string">'suc'</span>)</div><div class="line">        &#125;)</div><div class="line">    &#125;)</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>我的天，如此粗暴的写法还真是可以诶….但这不又是….不行！不行！不行！ （如果你没瞎，你知道我要什么）    </p>
+<p>回忆一下第一次我们遇到回调地狱时的做法是什么？     </p>
+<p>貌似是编写一个又臭又长的遍历promise状态的回调函数？    </p>
+<p>人家那其实是个callback&amp;helper混合体….    </p>
+<p>啊对对对，逼格不能丢，对，我们需要一个helper，来让我们的generator函数自动执行， 当然执行的时机是上一个yiled后的异步请求成功时。    </p>
+<p>梳理下思路： </p>
+<ul>
+<li>遍历下去的条件是还有yield语句存在，那么就是 <code>g.next.done !== true</code></li>
+<li>让我们的异步请求完成后调用<code>g.next()</code>，那么就是<code>result.value.then</code>里面调用next()</li>
+<li>每次遍历时我们得让value更新： <code>g.next()</code>赋值。</li>
+<li>考虑到我们的value实际上都是Promise实例，那我们还需要考虑resolve时的传参问题，给上面的next括号里都加上<code>res</code>参数</li>
+</ul>
+<p>于是我们可以写出这样一个helper函数：   </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">run</span>(<span class="params">gen</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> g = gen;</div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">next</span>(<span class="params">res</span>) </span>&#123;</div><div class="line">        <span class="comment">//result is a promise, in generator, the first next() will ignore the parameter passed in.</span></div><div class="line">        <span class="keyword">var</span> result = g.next(res);</div><div class="line">        <span class="keyword">if</span> (result.done) <span class="keyword">return</span> result.value; <span class="comment">//udefined</span></div><div class="line">        result.value.then(<span class="function"><span class="keyword">function</span> (<span class="params">res</span>) </span>&#123;</div><div class="line">            next(res);</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line">    next();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>迫不及待了，赶紧测试一下效果，让我来输入这段芝麻开门密码： <code>run(g)</code>   </p>
+<p><img src="http://om8hmotom.bkt.clouddn.com/2017-03-24-promiseandG.gif" alt=""></p>
+<p>很好，跟预期中一样，然后又是老套路，消灭重复！用遍历改写：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">// Maybe Loop? </span></div><div class="line"><span class="keyword">let</span> gen = <span class="function"><span class="keyword">function</span>* (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, task; task = [<span class="string">'file1'</span>, <span class="string">'file2'</span>, <span class="string">'file3'</span>][i++];) &#123;</div><div class="line">        <span class="keyword">let</span> temp = <span class="keyword">yield</span> getFile(task)</div><div class="line">        render(temp, <span class="string">'mes'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>可能有人会怒吼：<strong>装逼装到底，上迭代函数啊！</strong>     </p>
+<p>于是啪啪啪敲出了更短的：    </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">let</span> gen = <span class="function"><span class="keyword">function</span>* (<span class="params"></span>) </span>&#123;</div><div class="line">    [<span class="string">'file1'</span>, <span class="string">'file2'</span>, <span class="string">'file3'</span>].forEach(<span class="function"><span class="keyword">function</span> (<span class="params">task, idx</span>) </span>&#123;</div><div class="line">        <span class="keyword">let</span> temp = <span class="keyword">yield</span> getFile(task);</div><div class="line">        render(temp, <span class="string">'mes'</span>);</div><div class="line">    &#125;);</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>我只能说：</p>
+<p><img src="http://om8hmotom.bkt.clouddn.com/2017-03-24-141404.jpg" alt=""></p>
+<p>少年，你很有想法，可是… <strong>yield是不能出现在普通函数里的</strong>，forEach后面的函数不就是一个普通的…函数吗？    </p>
+<p>我们已经做的足够好，开心吗。    </p>
+<h2 id="async"><a href="#async" class="headerlink" title="async"></a>async</h2><p>潮人们肯定都知道这是什么了，我最崩溃的是在于看到一篇外国友人的文章，像我一样细数异步编程的变迁，结果下面有位大哥评论：    </p>
+<p><strong>You are SOOOO late dude, we’ve already switched to async…</strong></p>
+<p>好吧，我们都是变迁的弃儿…    </p>
+<p>别啰嗦了！快看看用async怎么写：   </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> asy = <span class="keyword">async</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> f1 = awiait getFile(<span class="string">'file1'</span>);</div><div class="line">    render(f1, <span class="string">'mes'</span>);</div><div class="line">    <span class="keyword">var</span> f2 = awiait getFile(<span class="string">'file2'</span>);</div><div class="line">    render(f2, <span class="string">'mes'</span>);</div><div class="line">    <span class="keyword">var</span> f3 = awiait getFile(<span class="string">'file3'</span>);</div><div class="line">    render(f3, <span class="string">'mes'</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>Ok, that’s all, we are good to go…</strong>    </p>
+<p><strong>等等！执行器呢！helper呢！</strong>    </p>
+<p><strong>先生你好，我们async函数里内置执行器的喔！</strong>    </p>
+<p><img src="http://om8hmotom.bkt.clouddn.com/2017-03-24-omg.gif" alt="">   </p>
+<p>恩，这是一个强大的generator+promise写法的语法糖，可惜ES6还不支持啊。    </p>
+<p><strong>可我们有babel哇！</strong></p>
+<p><img src="http://om8hmotom.bkt.clouddn.com/2017-03-24-babel-1.jpg" alt="">   </p>
+<h1 id="More-asynchronous"><a href="#More-asynchronous" class="headerlink" title="More asynchronous"></a>More asynchronous</h1><p>现在，我们已经走过了这么大一圈，见识了种种我们苦思冥想用来应对异步流程控制的方法，而接下来是运用这些方法，去做一些有趣的事情，比如…. 动画？    </p>
+<p>在下一篇文章里，我会总结我近期学习到的动画的实现方式，以及如何控制动画队列。    </p>
+<p>毕竟，咱们是前端，得做点正反馈短快平的事来刺激自己，不断地进步，总结。    </p>
+<hr>
+<p>所有用例代码可以在我的Github里找到：  <a href="https://github.com/kylewh/IntoFrontEnd/tree/master/Learning/async" target="_blank" rel="external">async</a>    </p>
+<p>本文所有权…算了…随便转…知识共享…互相指导.    </p>
+<p>我的博客: <a href="https://kylewh.github.io/">kylewh</a>   </p>
+<p>(妈呀真的跳票了好久不动啊…逃…)</p>
+
+                <hr>
+                
+                <!-- 多说 Share start -->
+                <div class="ds-share"
+                     style="text-align: right"
+                     data-thread-key="2017/03/24/From-Iterator-To-Async/"
+                     data-title="From Iterator To Async"
+                     data-url="http://kylewh.github.io/2017/03/24/From-Iterator-To-Async/"
+                     data-images="http://kylewh.github.io/2017/03/24/From-Iterator-To-Async//book.jpg"
+                     data-content="
+代码是人脑逻辑的抽象体现，我们始终在真实发生的反直觉的逻辑与人脑逻辑的平衡中挣扎。 我们的顶... | Kyle&#39;s blog ">
+                    <div class="ds-share-inline">
+                        <ul class="ds-share-icons-16">
+                            <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                            <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                            <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                            <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                        </ul>
+                        <div class="ds-share-icons-more">
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+                <!-- 多说 Share end-->
+                
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2017/04/10/flex布局梳理/" data-toggle="tooltip" data-placement="top"
+                           title="flex布局梳理 ">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2017/03/14/知乎秀我一脸，这必须是考察柯里化/" data-toggle="tooltip" data-placement="top"
+                           title="知乎秀我一脸，这必须是考察柯里化">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread"
+                         data-thread-key="2017/03/24/From-Iterator-To-Async/"
+                         data-title="From Iterator To Async"
+                         data-url="http://kylewh.github.io/2017/03/24/From-Iterator-To-Async/">
+                    </div>
+                </div>
+                <!-- 多说评论框 end -->
+                
+
+                
+
+            </div>
+
+            <div class="col-lg-2 col-lg-offset-0 visible-lg-block sidebar-container catalog-container">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#秩序之源：顺序"><span class="toc-text">秩序之源：顺序</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Loop-amp-traverse"><span class="toc-text">Loop & traverse</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#难以抑制的控制欲"><span class="toc-text">难以抑制的控制欲</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Iterator"><span class="toc-text">Iterator</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#深渊"><span class="toc-text">深渊</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Callbackhell"><span class="toc-text">Callbackhell</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Thunk"><span class="toc-text">Thunk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#More-thunk"><span class="toc-text">More thunk</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#击碎异步的桎梏"><span class="toc-text">击碎异步的桎梏</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Promise"><span class="toc-text">Promise</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#洁癖和偏执的控制欲"><span class="toc-text">洁癖和偏执的控制欲</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Generator"><span class="toc-text">Generator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#async"><span class="toc-text">async</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#More-asynchronous"><span class="toc-text">More asynchronous</span></a></li></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5 class="text-center">
+                        <a href="/tags/">FEATURED TAGS</a>
+                    </h5>
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#JS"
+                           title="JS">JS</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
+    </div>
+</article>
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    // dynamic User by Hux
+    var _user = 'kylewh';
+
+    // duoshuo comment query.
+    var duoshuoQuery = {short_name: _user};
+    (function () {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';
+        ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+</script>
+<!-- 多说公共JS代码 end -->
+
+
+
+
+
+<!-- Footer -->
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <br>
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/kylevon">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/kylewh">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; KYLEWH 2017
+                    <br>
+                    <span id="busuanzi_container_site_pv" style="font-size: 12px;">PV: <span id="busuanzi_value_site_pv"></span> Times</span>
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://kylewh.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- swiftype -->
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install','null','2.0.0');
+</script>
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!--wechat title img-->
+<img class="wechat-title-img" src="http://om8hmotom.bkt.clouddn.com/2017-06-19-comic.jpeg">
+</body>
+
+</html>

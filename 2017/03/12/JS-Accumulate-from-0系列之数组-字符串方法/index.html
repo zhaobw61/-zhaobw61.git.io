@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="廖文浩在 Github 上的个人博客">
+    <meta name="keyword" content="null">
+    <meta name="theme-color" content="#600090">
+    <meta name="msapplication-navbutton-color" content="#600090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#600090">
+    <link rel="shortcut icon" href="http://om8hmotom.bkt.clouddn.com/2017-06-19-comic.jpeg">
+    <link rel="alternate" type="application/atom+xml" title="KYLEWH" href="/atom.xml">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
+    <title>
+        
+        JS: Accumulate from 0系列之数组&amp;字符串方法｜Kyle&#39;s blog
+        
+    </title>
+
+    <link rel="canonical" href="http://kylewh.github.io/2017/03/12/JS-Accumulate-from-0系列之数组-字符串方法/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/blog-style.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+</head>
+
+<style>
+
+    header.intro-header {
+        background-image: url('http://om8hmotom.bkt.clouddn.com/banner_2.jpg')
+    }
+</style>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="" class="animated fadeIn">
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
+" data-ishome = "false" >
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand animated pulse" href="/">
+                <span class="brand-logo">
+                    KYLEWH
+                </span>
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <!-- /.navbar-collapse -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+					
+                    
+                        
+							
+                        <li>
+                            <a href="/tags/">tags</a>
+                        </li>
+							
+						
+                    
+					
+					
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+//    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+<!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="http://om8hmotom.bkt.clouddn.com/book.jpg">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('http://om8hmotom.bkt.clouddn.com/book.jpg?imageView2/1/w/1400/h/400/interlace/1/q/90')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>JS: Accumulate from 0系列之数组&amp;字符串方法</h1>
+                    
+                    <span class="meta">
+                         作者 Kylewh
+                        <span>
+                          日期 2017-03-12
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                        <a class="tag" href="/tags/#JS"
+                           title="JS">JS</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="post-title-haojen">
+        <span>
+            JS: Accumulate from 0系列之数组&字符串方法
+        </span>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+                <h1 id="Array"><a href="#Array" class="headerlink" title="Array"></a>Array</h1><h2 id="length-你问我有多长？"><a href="#length-你问我有多长？" class="headerlink" title="length:你问我有多长？"></a>length:你问我有多长？</h2><p>数组的长度是一个可修改的属性，而作为一个类数组的必要条件也是具有一个可以读写的<code>length</code>属性。     </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line"><span class="built_in">console</span>.log( arr.length ); <span class="comment">//5</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">//如果设置长度超过原有的长度，则新的位置的值为undefined</span></div><div class="line">arr.length = <span class="number">6</span>;</div><div class="line"><span class="built_in">console</span>.log( arr ); <span class="comment">//[1, 2, 3, 4, 5, undefined]</span></div><div class="line">arr.length = <span class="number">4</span>;</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">//如果长度设置小于原有长度，则超过的部分消失。</span></div><div class="line"><span class="comment">//我们可以利用这个属性进行数组后几位的删除，而无需使用splice</span></div><div class="line"><span class="built_in">console</span>.log (arr); <span class="comment">//[1, 2, 3, 4]</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">//length也是个很好的lastElement索引,但是要记住-1，因为数组索引以0开始。</span></div><div class="line"><span class="built_in">console</span>.log(arr[arr.lentgh<span class="number">-1</span>]);</div></pre></td></tr></table></figure>
+<p>利用length的特征（可读写），以及数组元素的可枚举性，我们来伪造一个伪数组:</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">var</span> FakeArr = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125;</div><div class="line"></div><div class="line"><span class="built_in">Object</span>.defineProperty(FakeArr.prototype, <span class="string">'length'</span>, &#123;</div><div class="line">  <span class="attr">writable</span>: <span class="literal">true</span>, <span class="comment">//enumerable在这种定义方式下默认为false</span></div><div class="line">  value: <span class="number">5</span></div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="keyword">var</span> fakeArr = <span class="keyword">new</span> FakeArr();</div><div class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</div><div class="line">  fakeArr[i] = i;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//尝试一下数组的push</span></div><div class="line">[].push.call(fakeArr,<span class="number">5</span>);</div><div class="line"></div><div class="line"><span class="keyword">for</span>( i=<span class="number">0</span>, length = fakeArr.length; i&lt;length; i++ )&#123;</div><div class="line">	<span class="built_in">console</span>.log(fakeArr[i]); <span class="comment">//0,1,2,3,4,5</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log (fakeArr); </div><div class="line"><span class="comment">//结果: </span></div><div class="line"><span class="comment">/*</span></div><div class="line">  [object Object] &#123;</div><div class="line">    0: 0,</div><div class="line">    1: 1,</div><div class="line">    2: 2,</div><div class="line">    3: 3,</div><div class="line">    4: 4,</div><div class="line">    5: 5,</div><div class="line">    length: 6</div><div class="line">  &#125;</div><div class="line">  我们成功了！</div><div class="line">*/</div></pre></td></tr></table></figure>
+<h2 id="从数组得到一个字符串"><a href="#从数组得到一个字符串" class="headerlink" title="从数组得到一个字符串"></a>从数组得到一个字符串</h2><p>所有对象都具有toString方法和valueOf方法，数组也不例外：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr = [<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>];</div><div class="line"><span class="built_in">console</span>.log(arr.toString() ); <span class="comment">//"0,1,2,3,4" 这是一个由所有值拼接而成的以逗号分隔的字符串。</span></div><div class="line"><span class="comment">//效果等同于split(',)</span></div><div class="line"><span class="built_in">console</span>.log(arr.toString.join(<span class="string">','</span>));</div></pre></td></tr></table></figure>
+<h2 id="模拟栈和队列"><a href="#模拟栈和队列" class="headerlink" title="模拟栈和队列"></a>模拟栈和队列</h2><p>学过数据结构的都知道这俩货是啥吧？ 前者是先进后出，后者是先进先出；    </p>
+<p>对于栈，先进后出也就是后进先出，相当于我们总是在向一个管道里推入东西，而每次我们也只能从内容物的顶部取出东西。    </p>
+<ul>
+<li>在数组里模拟<strong>推入</strong>的方法叫做<code>push</code>，它可以接受<code>任意数量</code>的参数，并把他们逐个添加到数组尾部，并且返回推入完毕后的数组<strong>长度</strong>。</li>
+<li>模拟从内容物的顶部取出东西的方法叫做<code>shift</code>，它移除数组的第一项并返回它。</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr2 = [<span class="number">0</span>,<span class="number">1</span>];</div><div class="line"><span class="built_in">console</span>.log( arr2.push(<span class="number">2</span>) ); <span class="comment">//3</span></div><div class="line"><span class="built_in">console</span>.log( arr2.pop() ); <span class="comment">//2</span></div></pre></td></tr></table></figure>
+<p>对于队列，想象有一个管道，我们往里面塞入球体，那么最先进去的球一定是第一个从管道尾部被拿出来的。</p>
+<ul>
+<li>这个放入球的过程在数组里叫做<code>unshift</code>，它跟push一项可以接受任意数量个参数，并且将它们插入到数组的头部，返回数组的<code>length</code>。</li>
+<li>pop则是用来模拟从管道尾部拿球的方法，从数组末尾移除<strong>最后一项</strong>（注意这次不是任意数量了，而且也不接收参数)，而且返回被弹出的最后一项。</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr3 = [<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>];</div><div class="line"><span class="built_in">console</span>.log( arr3.unshift(<span class="number">0</span>,<span class="number">1</span>) ); <span class="comment">//6</span></div><div class="line"><span class="built_in">console</span>.log( arr3.shift() ); <span class="comment">//0</span></div></pre></td></tr></table></figure>
+<h2 id="数组有点乱，排个序吧？"><a href="#数组有点乱，排个序吧？" class="headerlink" title="数组有点乱，排个序吧？"></a>数组有点乱，排个序吧？</h2><p>第一个是让所有元素逆序的方法:<code>reverse</code>，还有可以对数组按某种规则排序的<code>sort</code>方法。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr4 = [<span class="number">6</span>,<span class="number">5</span>,<span class="number">4</span>,<span class="number">3</span>,<span class="number">2</span>,<span class="number">1</span>];</div><div class="line">arr4.reverse();</div><div class="line"><span class="built_in">console</span>.log(arr4); <span class="comment">//[1,2,3,4,5,6]</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> arr5 = [<span class="number">2</span>,<span class="number">6</span>,<span class="number">3</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">8</span>,<span class="number">9</span>,<span class="number">1</span>];</div><div class="line"><span class="comment">//sort接收一个比较函数参数，比较函数接收两个参数，如果第一个参数应该位于第二个之前则返回一个负数，如果第二个参数应该位于第一个之前则返回一个整数，两个参数相等则返回0.</span></div><div class="line"><span class="comment">//我们想正序排列，后一个参数减去前一个参数为负数</span></div><div class="line">arr5.sort(<span class="function">(<span class="params">a,b</span>)=&gt;</span> a-b);</div><div class="line"><span class="built_in">console</span>.log(arr5);<span class="comment">//[1, 2, 3, 5, 6, 6, 8, 9]</span></div></pre></td></tr></table></figure>
+<h2 id="复制一段当新数组之slice"><a href="#复制一段当新数组之slice" class="headerlink" title="复制一段当新数组之slice"></a>复制一段当新数组之slice</h2><p>它能够基于当前数组中的一个或者多个创建(浅复制）一个新数组。slice方法接收一个或两个参数，起始项和结束位置，记住，不包括结束位置的元素。如果没有最后一个参数，则默认结束位置为数组的length.这个方法返回起始位置到结束位置之间的项。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr6 = [ <span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,&#123;<span class="string">'key'</span>:<span class="string">'value'</span>&#125;];</div><div class="line"><span class="keyword">var</span> arr7 = arr6.slice(<span class="number">4</span>)  <span class="comment">// [object]</span></div><div class="line"><span class="built_in">console</span>.log(arr7); </div><div class="line"><span class="comment">/*</span></div><div class="line">	[[object Object] &#123;</div><div class="line">	  key: "value"</div><div class="line">	&#125;]</div><div class="line">*/</div><div class="line"><span class="keyword">var</span> arr8 = arr6.slice(<span class="number">0</span>,<span class="number">4</span>); <span class="comment">//[0,1,2,3]</span></div><div class="line"></div><div class="line"><span class="comment">//浅复制</span></div><div class="line"><span class="built_in">console</span>.log ( arr6[<span class="number">4</span>] === arr7[<span class="number">0</span>] ); <span class="comment">//true</span></div></pre></td></tr></table></figure>
+<h2 id="强大的splice"><a href="#强大的splice" class="headerlink" title="强大的splice"></a>强大的splice</h2><p>它有三种作用： 删除，插入，替换。</p>
+<ul>
+<li>可以删除任意数量的项，第一个参数是要删除的第一项的位置，第二个参数要删除的数量，这个方法始终返回被删除的项目组成的数组.</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr9 = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>];</div><div class="line"><span class="built_in">console</span>.log( arr9.splice(<span class="number">0</span>,<span class="number">3</span>) );<span class="comment">//[1, 2, 3]</span></div><div class="line"><span class="built_in">console</span>.log( arr9 ); <span class="comment">//[4, 5, 6]</span></div></pre></td></tr></table></figure>
+<ul>
+<li>可以向任意位置插入任意数量的项目，提供三个参数，起始位置，0（不删除），和要插入的项目</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr10 = [<span class="string">'学挖掘机'</span>，<span class="string">'哪'</span>，<span class="string">'家'</span>, <span class="string">'强？'</span>] ;<span class="comment">// 哈哈哈arr10.splice(4,0,' 出门右转','找','蓝','翔!'); //[]</span></div><div class="line"><span class="built_in">console</span>.log(arr10.join(<span class="string">''</span>)); <span class="string">"学挖掘机哪家强？ 出门右转找蓝翔!"</span></div></pre></td></tr></table></figure>
+<ul>
+<li>可以向指定位置插入任意数量的项，同时删除任意数量的项，参数： 起始位置，删除的项目，插入的项目</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr11 = [<span class="string">'php'</span>,<span class="string">'是坠吼的语言！'</span>];</div><div class="line">arr11.splice(<span class="number">0</span>,<span class="number">1</span>,<span class="string">'JavaSctipt'</span>,<span class="string">'才'</span>); <span class="comment">//['php'];</span></div><div class="line"><span class="built_in">console</span>.log(arr11.join(<span class="string">''</span>)); <span class="comment">//"JavaSctipt才是坠吼的语言！"</span></div></pre></td></tr></table></figure>
+<h2 id="你在找人吗？"><a href="#你在找人吗？" class="headerlink" title="你在找人吗？"></a>你在找人吗？</h2><p><code>indexOf</code>,<code>lastIndexOf</code>,英语学的怎么样？ 不用解释了把，上代码。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr12 = [<span class="string">'a'</span>,<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'c'</span>,<span class="string">'d'</span>];</div><div class="line"><span class="built_in">console</span>.log( arr12.indexOf(<span class="string">'a'</span>) ); <span class="comment">//返回匹配的第一个位置</span></div><div class="line"><span class="built_in">console</span>.log( arr12.lastIndexOf(<span class="string">'a'</span>) );<span class="comment">//1</span></div></pre></td></tr></table></figure>
+<h2 id="给我一个个搜-迭代"><a href="#给我一个个搜-迭代" class="headerlink" title="给我一个个搜-迭代"></a>给我一个个搜-迭代</h2><p><code>every</code> 给定一个检查函数，如果数组每一项都使得这个函数返回true，则返回true. 对应的还有<code>some</code>，只要检查函数有一个返回true，就返回true.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><div class="line">var arr13 = [0,1,2,3,4,5];</div><div class="line">console.log( arr13.every(ele =&gt; ele &lt;= 10) ); //true</div><div class="line"></div><div class="line">console.log( arr13.some(ele =&gt; ele&gt;=5) ); //true</div></pre></td></tr></table></figure>
+<p><code>filter</code>这次是用返回true的元素组成一个<strong>新</strong>数组，记住，是新数组！</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr14 = [<span class="number">10</span>,<span class="number">11</span>,<span class="number">12</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>];</div><div class="line"><span class="keyword">var</span> arr15 = arr14.filter(<span class="function"><span class="keyword">function</span>(<span class="params">ele</span>)</span>&#123;</div><div class="line">	<span class="keyword">return</span> ele&gt;=<span class="number">10</span>;</div><div class="line">&#125;);</div><div class="line"><span class="built_in">console</span>.log(arr15);<span class="comment">//[10, 11, 12]</span></div></pre></td></tr></table></figure>
+<p><code>forEach</code>每一项都做点什么，不返回值.传入的函数具有三个参数，当前项，索引，数组本身。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr16 = [<span class="string">'你'</span>,<span class="string">'我'</span>,<span class="string">''</span>];</div><div class="line">arr16.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">ele,idx,arr</span>)</span>&#123;</div><div class="line">	<span class="keyword">if</span>(ele === <span class="string">''</span>)&#123;</div><div class="line">		arr[idx]+=<span class="string">'不猜!?'</span>;</div><div class="line">	&#125;<span class="keyword">else</span> &#123;</div><div class="line">		arr[idx]+=<span class="string">'猜'</span>;</div><div class="line">	&#125;</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(arr16.join(<span class="string">''</span>));<span class="comment">//你猜我猜不猜!?</span></div><div class="line"></div><div class="line"><span class="comment">//记住，这个函数如果你对数组本身不进行操作是不会改变数组的，除非你故意改变它。</span></div></pre></td></tr></table></figure>
+<p><code>map</code>，这个函数跟forEach很像，但是它用每次调用函数的返回值形成一个新数组.使用上面的例子来看看</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr16 = [<span class="string">'你'</span>,<span class="string">'我'</span>,<span class="string">''</span>];</div><div class="line"><span class="keyword">var</span> arr17 = arr16.map(<span class="function"><span class="keyword">function</span>(<span class="params">ele,idx,arr</span>)</span>&#123;</div><div class="line">	<span class="keyword">if</span>(ele === <span class="string">''</span>)&#123;</div><div class="line">		<span class="keyword">return</span> ele+=<span class="string">'猜不猜!?'</span>;</div><div class="line">	&#125;<span class="keyword">else</span> &#123;</div><div class="line">		<span class="keyword">return</span> ele+=<span class="string">'猜'</span>;</div><div class="line">	&#125;</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(arr17.join(<span class="string">''</span>));<span class="comment">//"你猜我猜猜不猜!?"</span></div><div class="line"></div><div class="line"><span class="comment">//看出区别了吗？ </span></div><div class="line"><span class="comment">//一个是做事，然后闪人。 --forEach</span></div><div class="line"><span class="comment">//一个是做事，然后返回做事的结果组成的数组 --forMap</span></div></pre></td></tr></table></figure>
+<h2 id="reduce大法好"><a href="#reduce大法好" class="headerlink" title="reduce大法好"></a>reduce大法好</h2><p>这也是一个很强大的方法，传入一个函数，接收4个参数：前一个值，当前值，项的索引，和数组对象. 除了函数外，还有一个可选的初始值参数。最后返回一个最终返回值。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="comment">//我们可以很轻易的求出一组数组的所有项目之和</span></div><div class="line"><span class="keyword">var</span> arr18 = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">8</span>,<span class="number">9</span>] <span class="comment">//心算下(1+9)*9/2 = 45</span></div><div class="line"><span class="keyword">var</span> result = arr18.reduce(<span class="function">(<span class="params">a,b</span>)=&gt;</span>a+b);</div><div class="line"><span class="built_in">console</span>.log(result);<span class="comment">//45</span></div></pre></td></tr></table></figure>
+<p>我们可以实现常见的Array Flatten</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> arr = [<span class="number">1</span>,[<span class="number">2</span>,[<span class="number">3</span>,<span class="number">4</span>]],[<span class="number">5</span>,<span class="number">6</span>,[<span class="number">7</span>,<span class="number">8</span>]]];</div><div class="line"><span class="keyword">var</span> flatten = <span class="function"><span class="params">array</span> =&gt;</span> array.reduce( <span class="function">(<span class="params">acc,val</span>) =&gt;</span> acc.concat(<span class="built_in">Array</span>.isArray(val)? flatten(val) : val), []);</div><div class="line"><span class="built_in">console</span>.log( flatten(arr) ); <span class="comment">// [1, 2, 3, 4, 5, 6, 7, 8]</span></div></pre></td></tr></table></figure>
+<p>我们还可以用它来做点高大上的事（高阶函数应用里reduce相当强大）</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> __reduce__ = <span class="function"><span class="params">fn</span> =&gt;</span> (...args) =&gt; args.reduce(<span class="function">(<span class="params">a, b</span>) =&gt;</span> fn(a, b));</div><div class="line"><span class="keyword">var</span> add = <span class="function">(<span class="params">a,b</span>)=&gt;</span>a+b;</div><div class="line"><span class="keyword">var</span> __add__ = __reduce__(add);</div><div class="line"><span class="built_in">console</span>.log( __add__(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">8</span>,<span class="number">9</span>) ); <span class="comment">//45</span></div><div class="line"></div><div class="line"><span class="comment">//想当于将传入的函数改造成内置reduce的函数，对参数进行两两操作。</span></div><div class="line"><span class="comment">/*</span></div><div class="line">还有请注意一点： If initialValue isn't provided, reduce will execute the callback function starting at index 1, skipping the first index. If initialValue is provided, it will start at index 0.</div><div class="line">*/</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>以上方法除了回调函数参数之外，还可以传入一个参数作为this的绑定</strong></p>
+</blockquote>
+<h2 id="本质是对象"><a href="#本质是对象" class="headerlink" title="本质是对象"></a>本质是对象</h2><p>为什么要单独列出这一条？看如下代码：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><div class="line"><span class="keyword">var</span> aFn = [];</div><div class="line"><span class="keyword">var</span> f1 = <span class="function"><span class="keyword">function</span>(<span class="params">fn</span>) </span>&#123;</div><div class="line">	<span class="built_in">console</span>.log(<span class="keyword">this</span>.length);</div><div class="line">	<span class="built_in">console</span>.log(<span class="keyword">this</span>);</div><div class="line">	<span class="built_in">arguments</span>[<span class="number">0</span>]();</div><div class="line">&#125;</div><div class="line"><span class="keyword">var</span> f2 = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	<span class="built_in">console</span>.log(<span class="keyword">this</span>.length);</div><div class="line">&#125;</div><div class="line">aFn.push(f1,<span class="number">1</span>,<span class="number">2</span>);</div><div class="line">aFn[<span class="number">0</span>](f2); <span class="comment">//输出什么？</span></div><div class="line"></div><div class="line"><span class="comment">/*</span></div><div class="line">  答案： 先输出3，再输出数组本身， 再输出1.</div><div class="line">  输出3 &amp; 输出数组本身： this指向了数组本身，因为数组是一个对象啊！它充当了f1这个函数的调用者，所以函数内部的this指向了数组本身.</div><div class="line">  </div><div class="line">  输出1： wait~！？哪来的1？ 当然是arguments的length啊！！</div><div class="line">  这里又是一个trick，arguments是一个数组对象，是形参的一个映射。</div><div class="line">  arguments[0]存储着参数，而第一项则是f2,f2的this则指向了它的调用者：arguments对象</div><div class="line">  刚好arguments对象是具有length的. so....！！ 是不是很阴险？</div><div class="line">*/</div></pre></td></tr></table></figure>
+<h1 id="String"><a href="#String" class="headerlink" title="String"></a>String</h1><h2 id="string-charAt-pos"><a href="#string-charAt-pos" class="headerlink" title="string.charAt(pos)"></a>string.charAt(pos)</h2><p>返回只含一个字母的字符串</p>
+<h2 id="string-indexOf-searchString-position"><a href="#string-indexOf-searchString-position" class="headerlink" title="string.indexOf(searchString, position)"></a>string.indexOf(searchString, position)</h2><p>返回字符串里面的字母所在的位置下标，实际上把把 string 看成一个 char[]，更容易理解，postion代表从哪个位置开始查找，对应有一个lastIndexOf，从设定位置之前向前搜索。</p>
+<h2 id="string-slice-start-end"><a href="#string-slice-start-end" class="headerlink" title="string.slice(start, end)"></a>string.slice(start, end)</h2><p>返回子字符串，参数可以为负数</p>
+<h2 id="string-match-regexp"><a href="#string-match-regexp" class="headerlink" title="string.match(regexp)"></a>string.match(regexp)</h2><p>返回比配字符串，假如有正则表达式为/xxx/g则，返回一个数组，否则返回第一次匹配到的字符串</p>
+<h2 id="string-replace-searchValue-replaceValue-"><a href="#string-replace-searchValue-replaceValue-" class="headerlink" title="string.replace(searchValue, replaceValue)"></a>string.replace(searchValue, replaceValue)</h2><p>替换字符串，searchValue 可以为正则表达式。</p>
+<h2 id="str-substring-indexStart-indexEnd"><a href="#str-substring-indexStart-indexEnd" class="headerlink" title="str.substring(indexStart[, indexEnd])"></a>str.substring(indexStart[, indexEnd])</h2><p>返回字符串的一部分，开始位置和停止位置，不包括停止位置，如果不传入第二个参数，就将<strong>字符串的长度作为结束位置</strong>.</p>
+<h2 id="str-substr-start-length"><a href="#str-substr-start-length" class="headerlink" title="str.substr(start [, length])"></a>str.substr(start [, length])</h2><p>英语好的应该看出差别了吧，第二个参数是项数，不设这个参数同样<strong>将字符串长度作为结束位置</strong>.</p>
+
+                <hr>
+                
+                <!-- 多说 Share start -->
+                <div class="ds-share"
+                     style="text-align: right"
+                     data-thread-key="2017/03/12/JS-Accumulate-from-0系列之数组-字符串方法/"
+                     data-title="JS: Accumulate from 0系列之数组&amp;字符串方法"
+                     data-url="http://kylewh.github.io/2017/03/12/JS-Accumulate-from-0系列之数组-字符串方法/"
+                     data-images="http://kylewh.github.io/2017/03/12/JS-Accumulate-from-0系列之数组-字符串方法//book.jpg"
+                     data-content="Arraylength:你问我有多长？数组的长度是一个可修改的属性，而作为一个类数组的必要条件... | Kyle&#39;s blog ">
+                    <div class="ds-share-inline">
+                        <ul class="ds-share-icons-16">
+                            <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                            <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                            <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                            <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                        </ul>
+                        <div class="ds-share-icons-more">
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+                <!-- 多说 Share end-->
+                
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2017/03/14/知乎秀我一脸，这必须是考察柯里化/" data-toggle="tooltip" data-placement="top"
+                           title="知乎秀我一脸，这必须是考察柯里化">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2017/03/09/JS-Accumulate-from-0系列之构建模式-继承/" data-toggle="tooltip" data-placement="top"
+                           title="JS: Accumulate from 0系列之构建模式&继承">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread"
+                         data-thread-key="2017/03/12/JS-Accumulate-from-0系列之数组-字符串方法/"
+                         data-title="JS: Accumulate from 0系列之数组&amp;字符串方法"
+                         data-url="http://kylewh.github.io/2017/03/12/JS-Accumulate-from-0系列之数组-字符串方法/">
+                    </div>
+                </div>
+                <!-- 多说评论框 end -->
+                
+
+                
+
+            </div>
+
+            <div class="col-lg-2 col-lg-offset-0 visible-lg-block sidebar-container catalog-container">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Array"><span class="toc-text">Array</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#length-你问我有多长？"><span class="toc-text">length:你问我有多长？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#从数组得到一个字符串"><span class="toc-text">从数组得到一个字符串</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模拟栈和队列"><span class="toc-text">模拟栈和队列</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数组有点乱，排个序吧？"><span class="toc-text">数组有点乱，排个序吧？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#复制一段当新数组之slice"><span class="toc-text">复制一段当新数组之slice</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#强大的splice"><span class="toc-text">强大的splice</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#你在找人吗？"><span class="toc-text">你在找人吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#给我一个个搜-迭代"><span class="toc-text">给我一个个搜-迭代</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#reduce大法好"><span class="toc-text">reduce大法好</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#本质是对象"><span class="toc-text">本质是对象</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#String"><span class="toc-text">String</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#string-charAt-pos"><span class="toc-text">string.charAt(pos)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#string-indexOf-searchString-position"><span class="toc-text">string.indexOf(searchString, position)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#string-slice-start-end"><span class="toc-text">string.slice(start, end)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#string-match-regexp"><span class="toc-text">string.match(regexp)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#string-replace-searchValue-replaceValue-"><span class="toc-text">string.replace(searchValue, replaceValue)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#str-substring-indexStart-indexEnd"><span class="toc-text">str.substring(indexStart[, indexEnd])</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#str-substr-start-length"><span class="toc-text">str.substr(start [, length])</span></a></li></ol></li></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5 class="text-center">
+                        <a href="/tags/">FEATURED TAGS</a>
+                    </h5>
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#JS"
+                           title="JS">JS</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
+    </div>
+</article>
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    // dynamic User by Hux
+    var _user = 'kylewh';
+
+    // duoshuo comment query.
+    var duoshuoQuery = {short_name: _user};
+    (function () {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';
+        ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+</script>
+<!-- 多说公共JS代码 end -->
+
+
+
+
+
+<!-- Footer -->
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <br>
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/kylevon">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/kylewh">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; KYLEWH 2017
+                    <br>
+                    <span id="busuanzi_container_site_pv" style="font-size: 12px;">PV: <span id="busuanzi_value_site_pv"></span> Times</span>
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://kylewh.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- swiftype -->
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install','null','2.0.0');
+</script>
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!--wechat title img-->
+<img class="wechat-title-img" src="http://om8hmotom.bkt.clouddn.com/2017-06-19-comic.jpeg">
+</body>
+
+</html>

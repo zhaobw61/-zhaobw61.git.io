@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="廖文浩在 Github 上的个人博客">
+    <meta name="keyword" content="null">
+    <meta name="theme-color" content="#600090">
+    <meta name="msapplication-navbutton-color" content="#600090">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#600090">
+    <link rel="shortcut icon" href="http://om8hmotom.bkt.clouddn.com/2017-06-19-comic.jpeg">
+    <link rel="alternate" type="application/atom+xml" title="KYLEWH" href="/atom.xml">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.css">
+    <title>
+        
+        Optimization stuff—webpack实践回顾｜Kyle&#39;s blog
+        
+    </title>
+
+    <link rel="canonical" href="http://kylewh.github.io/2017/04/25/Optimization-stuff——webpack实践回顾/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/blog-style.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+</head>
+
+<style>
+
+    header.intro-header {
+        background-image: url('http://om8hmotom.bkt.clouddn.com/banner_2.jpg')
+    }
+</style>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="" class="animated fadeIn">
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top " id="nav-top" data-ispost = "true" data-istags="false
+" data-ishome = "false" >
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand animated pulse" href="/">
+                <span class="brand-logo">
+                    KYLEWH
+                </span>
+            </a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <!-- /.navbar-collapse -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+					
+                    
+                        
+							
+                        <li>
+                            <a href="/tags/">tags</a>
+                        </li>
+							
+						
+                    
+					
+					
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+//    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+<!-- Main Content -->
+
+<!--only post-->
+
+
+<img class="wechat-title-img"
+     src="http://om8hmotom.bkt.clouddn.com/2017-05-26-203605.jpg">
+
+
+<style>
+    
+    header.intro-header {
+        background-image: url('http://om8hmotom.bkt.clouddn.com/2017-05-26-203605.jpg?imageView2/1/w/1400/h/400/interlace/1/q/90')
+    }
+
+    
+</style>
+
+<header class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <div class="post-heading">
+                    <h1>Optimization stuff—webpack实践回顾</h1>
+                    
+                    <span class="meta">
+                         作者 Kylewh
+                        <span>
+                          日期 2017-04-25
+                         </span>
+                    </span>
+                    <div class="tags text-center">
+                        
+                        <a class="tag" href="/tags/#webpack"
+                           title="webpack">webpack</a>
+                        
+                        <a class="tag" href="/tags/#工程化"
+                           title="工程化">工程化</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="post-title-haojen">
+        <span>
+            Optimization stuff—webpack实践回顾
+        </span>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+            <!-- Post Container -->
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 post-container">
+                <p>接触前端工程化以来，用的最多的就是webpack，起初对它的印象就是： 再也不用手动写一堆script标签了… 一个就好，看起来多酷！是不是有种封装的感觉！ 接着便发现了一些问题， 比如： 打成一个包好大啊，要不要拆？怎么拆？到底拆成几个？ error提示不再那么清晰！ (想无耻的偷看别人的源码也变的困难，23333）随后就是对webpack有一个全面的了解，上述问题一个个都找到了解决方案。（光看文档真的会感觉像eatting shit啊…)    </p>
+<p>以下讲讲个人对webpack的一些理解，以及实践过的一些方案。（尽量不写代码，只谈思路和解决方案）</p>
+<h2 id="Webpack-vs-Gulp"><a href="#Webpack-vs-Gulp" class="headerlink" title="Webpack vs Gulp"></a>Webpack vs Gulp</h2><blockquote>
+<p>一言以蔽之： Gulp是<strong>Task Runner</strong>， Webpack是<strong>Module Bundler</strong>。   </p>
+</blockquote>
+<p>这句话就是区别所在，请好好体会语言的魅力。。。通过这个区别结合实践感受，可以得出的结论： </p>
+<ul>
+<li>gulp的最小单位是task，自然控制粒度更小。 </li>
+<li>Webpack是一套依赖打包方案，无需code来指导操作，除了配置文件，实际上最原始的配置下，我们几乎只用指定一些目录。</li>
+<li>既然gulp的主战场在于task，那么对于task的内容，它能做的比webpack多，受益于海量插件，开发过程中的一些手动的繁琐操作都可以用gulp来编写来达到自动化流式处理。比如对于文件名的一些批量修改啊，上传，部署。（webpack也能做，但这不是它的主要功能，它只是顺手可以做，同样通过引入插件，但是自由度和定制度不如gulp灵活）</li>
+<li>Webpack更擅长的是处理模块依赖关系，为何叫擅长？ 你有见过拿gulp去分析commonChunk吗？ Webpack可以对所有依赖进行分析并且提供可定制的处理方案，比如以何种规则进行commonChunk提取。 Code Split, tree Shaking， 都是基于webpack所擅长的领域而诞生的特性。</li>
+<li>二者是可以共存的，使用gulp对文件进行精细化操作，使用webpack对操作后的文件进行依赖打包。 可以发挥它们的最大威力。</li>
+</ul>
+<h2 id="Optimization"><a href="#Optimization" class="headerlink" title="Optimization"></a>Optimization</h2><p>既然是工程化，讲求的是效率，性能。 效率上，自然是对于时间的缩减。 而性能，是一个综合的概念，平衡时间与空间。 一个个来说。    </p>
+<h3 id="Size"><a href="#Size" class="headerlink" title="Size"></a>Size</h3><h4 id="更短的代码"><a href="#更短的代码" class="headerlink" title="更短的代码"></a>更短的代码</h4><p>对于文件大小，最直接的方案是对于最底层的优化： <strong>压缩</strong>代码！ 空格，换行，长变量名， 通通消灭。 编译更快了，load更快了，一举两得。 这是我们最先能想到的。 通常使用webpack自带的<code>webpack.optimize.uglifyjsplugin</code>。     </p>
+<h4 id="依赖重复"><a href="#依赖重复" class="headerlink" title="依赖重复"></a>依赖重复</h4><p>接着考虑依赖的优化，是否有<strong>重复</strong>？ 首先要知道重复是如何诞生的。 A库的依赖树和B库的依赖树中都含有一个C module， 那么就有可能重复打包C。 于是webpack可以帮你找出这些重复的部分，丢掉！对应的工具是dedupe，现在它已经被移除，webpack2将默认进行这些优化。    </p>
+<p>emm…我们的size貌似变小了不少， 有没有可能更进一步？    </p>
+<h4 id="冗余输出"><a href="#冗余输出" class="headerlink" title="冗余输出"></a>冗余输出</h4><p>从另外一个角度来思考，有没有可能存在一些<strong>冗余</strong>的代码？ 它们的存在与否并不会影响应用的正常运行？典型：定义并输出，但未被引入。 这些无人问津的代码就像依赖树上的树叶，我们用力的抖一抖，由于它们不具有引用，就会掉落。 —–&gt; 这就是tree shaking的形象比喻。 于是我们可以使用tree shaking进行冗余消除。   </p>
+<p>OK， 貌似我们做的不错， 文件是变小了很多， 但是我们可以做的更好。    </p>
+<h3 id="Split"><a href="#Split" class="headerlink" title="Split"></a>Split</h3><h4 id="按需加载"><a href="#按需加载" class="headerlink" title="按需加载"></a>按需加载</h4><p>我们并不需要一次性加载所有的代码，也许在首屏下我们只用到了相当少的模块，更多时候首页更像一个入口，真正的业务逻辑存在于分支里。 那么我需要考虑的是找到一个平衡： 如果我们的分支模块尺寸相对占比例较大，且各自独立，我们可以考虑<strong>按需</strong>加载。 这十分适用于路由系统。  OK，webpack里我们针对这种情况使用的方案是异步加载。 早期我们使用的是<code>System.import()</code>，现在已经原生支持import了，得益于babel的<code>syntax-dynamic-import</code>转义插件。 在react中，我们一般在指定route component的地方使用这种语法。查看输出我们会发现<code>0.bundle.hashXXXX.js</code>, <code>1.bundle.hashXXX.js</code>等字样，在chrome network里也可以清晰的观察到不同路径下的请求发起。    </p>
+<h4 id="重复依赖"><a href="#重复依赖" class="headerlink" title="重复依赖"></a>重复依赖</h4><p>Wait，既然是拆分，那么也可能产生重复问题吧？ A -&gt; C, B -&gt; C, 按需加载A和B的时候，C都作为依赖被打包在各自的bundle里。 那么我们可以建立起公共引用，让AB公用一个C，而不是各自拥有一个。 这就涉及到CommonChunkPlugin的使用，可以看这个github上的例子，非常清楚。<a href="https://github.com/webpack/webpack/tree/master/examples/move-to-parent" target="_blank" rel="external">moving modules from child-chunks to the parent chunk</a>    </p>
+<h4 id="公共提取"><a href="#公共提取" class="headerlink" title="公共提取"></a>公共提取</h4><p>还没完呢！考虑了在制作bundle过程中的优化，现在改换自己为一个用户的角色，当我使用网站访问APP的时候，我们下载了对应的打包文件，并进行缓存。 接着，作者提交了一个commit，进行了一些微弱的改动，可能只是一个不起眼的模块，然后打包，发布。 然后我们再次访问页面， 问题来了，由于文件更新了，我们不得不重新下载打包文件。     </p>
+<p><strong>Boom!</strong> —-&gt; 这就是关键所在， 我们浪费了大量时间在下载几乎<strong>同样</strong>的文件。     </p>
+<p>为了让我们可能会频繁改动的文件与那些我们几乎不会改动的文件分离开，我们需要进行抽取。 一般那些不会改动文件，往往是你node_modules下的依赖。 我们同样使用<code>CommonChunkPlugin</code>来进行提取， 有两种方式： 你指定vendor list。（比如react, react-router, react-dom…) 缺陷： 随着引入的外部依赖越来越多，你不得不频繁的取更新vendor list array. 所以还有第二种方式： 动态判定， 我们向插件传入一个函数，对外部依赖使用我们定制的规则进行分析，打包。 这个关键的rule，就是<code>minChunk</code>， 它的表义可以理解为： 最小引用次数。 当我们给其设置为一个数字的时候，代表所有引用次数大于等于这个数字的依赖都会被抽取打包成公共依赖。 当我们传入一个函数的时候，可以进行一些精细的抽取，具体见<a href="https://webpack.js.org/plugins/commons-chunk-plugin/#passing-the-minchunks-property-a-function" target="_blank" rel="external">文档</a> 当所有公共部分被单独打包的时候，我们的改动将与它们不再产生关联，自然，在你重新发布版本后，用户只需要去更新那些更新过的部分，而非整体reload。     </p>
+<h4 id="更细致的提取"><a href="#更细致的提取" class="headerlink" title="更细致的提取"></a>更细致的提取</h4><p>还有一些小问题：我们会发现，当我们改动codebase，打包，还是会生成不一样的vendor file啊！这是为什么？ —&gt; 我们忘记了webpack的操作， 每次运行时webpack会做一些事情来帮助完成任务，这些runtime code是会产生差异的。 所以，我们还需要再提取一个文件，通常我们叫它<code>manifest</code>，具体使用见<a href="https://webpack.js.org/guides/code-splitting-libraries/#manifest-file" target="_blank" rel="external">文档</a>，还有其他的解决方案<code>DLLReferencePlugin</code>，道理类似，这里有篇文章做了很好的示范: <a href="http://engineering.invisionapp.com/post/optimizing-webpack/" target="_blank" rel="external">OPTIMIZING WEBPACK FOR FASTER REACT BUILDS</a>。</p>
+<h4 id="解放双手"><a href="#解放双手" class="headerlink" title="解放双手"></a>解放双手</h4><p>Wait！ 我还有问题！ 每次打包，都会在输出目录里产生打包文件，我需要手动去删除，这很麻烦不是吗？ 而且还有那些动态生成的文件名，我难道每次都要去html里copy&amp;past吗！？好吧，鉴于频繁的打包更新，我们需要定制一个流程： 每次build前，删除输出目录，然后生成新的打包文件，并且自动在html文件里引入它们。  这里我们需要用到的工具是 <code>rimraf</code>，还有<code>HtmlWebpackPlugin</code>。 后者我们放入webpack.config.js里的plugins下， 前者我们则在npm scripts里写下这样的代码： <code>build: rimraf --&#39;你的输出目录&#39; &amp;&amp; webpack -p</code>， 大功告成! </p>
+<h3 id="依赖本身"><a href="#依赖本身" class="headerlink" title="依赖本身"></a>依赖本身</h3><p>对于公共依赖，比如react，lodash，我们是否可以对其本身做一些优化？    </p>
+<h4 id="按需依赖"><a href="#按需依赖" class="headerlink" title="按需依赖"></a>按需依赖</h4><p>我们只需要一个库中的很小一部分，这部分是独立的，那我们无需依赖整个库，而是这个特定的模块。比如<code>import _ from &#39;lodash&#39;</code> 改为 <code>import debounce from &#39;lodash/debounce&#39;</code></p>
+<h4 id="替代者"><a href="#替代者" class="headerlink" title="替代者"></a>替代者</h4><p>得益于强大的社区生态，一些黑科技层出不穷，比如针对react，有人开发出了preact和inferno这样的替代品，它们号称比react更快，且尺寸更小。 我们可以直接修改依赖，而不需要对代码做相应修改，nice！性能&amp;size的又一次双赢。   </p>
+<h3 id="Speed"><a href="#Speed" class="headerlink" title="Speed"></a>Speed</h3><p>我们做了上述一系列优化，却发现我们需要等待很久，因为webpack要做的事更多了。 通常在开发状态下，我们使用devServer来观察每一次rebuild后的成果。这个过程里，有相当大一部分的时间浪费了，参见前面用户访问reload的原理。 我们有很多时间是在对同样的代码做同样的事情。 为了省下时间，同理也是应用缓存机制，对于没有改动的部分进行缓存，只取rebuild那些改动了的部分。 针对这个思路，除了上面提到过的<code>DLLReferencePlugin</code>，还有一个黑科技值得一提：<code>Happypack</code>， 它可以建立线程，加速我们的rebuild，并很好的利用缓存。首次build时速度甚至会变慢，这是由于happypack在进行分析和配置，当进入开发阶段，改动代码后的rebuild会快到让你吓一跳。<a href="https://github.com/amireh/happypack" target="_blank" rel="external">Happypack</a></p>
+<p>That’s all，在具体的开发中，要记住”Everything is tradeoff “， 在优化这个范畴下，没有绝对的好坏，只有取舍和平衡。 每一个优化都有可能为你带来一些问题，那么解决这些问题的成本是否超越了优化所带来的收益本身呢？ 明确重点，把握时间和精力成本，才是优化的核心。 毕竟，工具，只是意志的辅助。     </p>
+<p>虽然这么说，还是期待更多黑科技，毕竟，程序猿总是在自虐和反省中惶惶终日嘛，233333   </p>
+
+                <hr>
+                
+                <!-- 多说 Share start -->
+                <div class="ds-share"
+                     style="text-align: right"
+                     data-thread-key="2017/04/25/Optimization-stuff——webpack实践回顾/"
+                     data-title="Optimization stuff—webpack实践回顾"
+                     data-url="http://kylewh.github.io/2017/04/25/Optimization-stuff——webpack实践回顾/"
+                     data-images="http://kylewh.github.io/2017/04/25/Optimization-stuff——webpack实践回顾//2017-05-26-203605.jpg"
+                     data-content="接触前端工程化以来，用的最多的就是webpack，起初对它的印象就是： 再也不用手动写一堆sc... | Kyle&#39;s blog ">
+                    <div class="ds-share-inline">
+                        <ul class="ds-share-icons-16">
+                            <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                            <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                            <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                            <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                        </ul>
+                        <div class="ds-share-icons-more">
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+                <!-- 多说 Share end-->
+                
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2017/05/01/感天动地，谍照！/" data-toggle="tooltip" data-placement="top"
+                           title="感天动地，谍照！">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2017/04/21/Redux小书系列-Redux思维导图/" data-toggle="tooltip" data-placement="top"
+                           title="Redux小书系列--Redux思维导图">Next Post &rarr;</a>
+                    </li>
+                    
+                </ul>
+
+                
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread"
+                         data-thread-key="2017/04/25/Optimization-stuff——webpack实践回顾/"
+                         data-title="Optimization stuff—webpack实践回顾"
+                         data-url="http://kylewh.github.io/2017/04/25/Optimization-stuff——webpack实践回顾/">
+                    </div>
+                </div>
+                <!-- 多说评论框 end -->
+                
+
+                
+
+            </div>
+
+            <div class="col-lg-2 col-lg-offset-0 visible-lg-block sidebar-container catalog-container">
+                <div class="toc-wrap">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Webpack-vs-Gulp"><span class="toc-text">Webpack vs Gulp</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Optimization"><span class="toc-text">Optimization</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Size"><span class="toc-text">Size</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#更短的代码"><span class="toc-text">更短的代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#依赖重复"><span class="toc-text">依赖重复</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#冗余输出"><span class="toc-text">冗余输出</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Split"><span class="toc-text">Split</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#按需加载"><span class="toc-text">按需加载</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#重复依赖"><span class="toc-text">重复依赖</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#公共提取"><span class="toc-text">公共提取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#更细致的提取"><span class="toc-text">更细致的提取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#解放双手"><span class="toc-text">解放双手</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#依赖本身"><span class="toc-text">依赖本身</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#按需依赖"><span class="toc-text">按需依赖</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#替代者"><span class="toc-text">替代者</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Speed"><span class="toc-text">Speed</span></a></li></ol></li></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5 class="text-center">
+                        <a href="/tags/">FEATURED TAGS</a>
+                    </h5>
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#webpack"
+                           title="webpack">webpack</a>
+                        
+                        <a class="tag" href="/tags/#工程化"
+                           title="工程化">工程化</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+        </div>
+
+    </div>
+</article>
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    // dynamic User by Hux
+    var _user = 'kylewh';
+
+    // duoshuo comment query.
+    var duoshuoQuery = {short_name: _user};
+    (function () {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';
+        ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+</script>
+<!-- 多说公共JS代码 end -->
+
+
+
+
+
+<!-- Footer -->
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 text-center">
+                <br>
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/kylevon">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/kylewh">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; KYLEWH 2017
+                    <br>
+                    <span id="busuanzi_container_site_pv" style="font-size: 12px;">PV: <span id="busuanzi_value_site_pv"></span> Times</span>
+                </p>
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/blog.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://kylewh.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- swiftype -->
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install','null','2.0.0');
+</script>
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!--wechat title img-->
+<img class="wechat-title-img" src="http://om8hmotom.bkt.clouddn.com/2017-06-19-comic.jpeg">
+</body>
+
+</html>
