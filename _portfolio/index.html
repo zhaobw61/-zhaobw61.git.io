@@ -14,7 +14,7 @@ layout: default
 		<script src="js/modernizr.custom.js"></script>
 	</head>
 	<body>
-		<div class="container" style="margin:0;padding:0;width:100%;">
+		<div class="container" style="margin:0;padding:0;width:100%;display:none">
 			<header>
 				<img width="175" height="175" style="border-radius:50%;" src="/img/avatar-hux.jpg">
 				<h1>Hux</h1>
@@ -195,6 +195,17 @@ layout: default
 					</li>
 				</ul>
 			</div>
+		</div>
+		<div>
+				{% for tag in site.tags %}
+				<p>{{ tag[0] }}</p>
+				{% endfor %}
+				
+				<p>{{ site.time }}</p>
+
+				{% for post in site.posts %}
+					<p>{{ post.date }}</p>
+				{% endfor %}
 		</div>
 	</body>
 </html>
