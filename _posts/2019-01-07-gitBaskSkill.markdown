@@ -8,6 +8,7 @@ header-img:   "img/post-bg-2018-11.jpg"
 header-mask:  0.3
 tags:
     - github
+    - 前端
 ---
 >整理文件的时候发现以前自己刚入门学习使用github的时候做得笔记，都是记录了一些基本用法。也算是自己的成长，就放在博客吧。
 
@@ -45,5 +46,3 @@ tags:
  > 这个命令相当于，创建分支`git branch name`,然后切换分支`git checkout name`
 
 切换分支: `git checkout name`
-
-
