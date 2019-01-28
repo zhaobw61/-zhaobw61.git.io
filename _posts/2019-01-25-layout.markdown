@@ -1,0 +1,171 @@
+---
+layout:       post
+title:        "三个常用的布局"
+subtitle:     ""
+date:         2019-01-25 21:00:00
+author:       "boowen"
+header-img:   "img/post-bg-2018-11.jpg"
+header-mask:  0.3
+tags:
+    - 前端
+    - html css
+---
+>经常在css布局的时候，感觉是随缘的。在布局的时候，花了太多的时间，每次要要用的时候再去查相关资料，所以这次对常用的布局进行总结。常用的布局：单栏布局、两栏布局、三栏布局。
+
+1.单栏布局
+
+单栏很简单，是最常用的布局，代码很简单。常用于中间只有主体的时候
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JS Bin</title>
+  <style>
+    .layout{
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    #header{
+      height: 60px;
+      background: red;
+    }
+    #content{
+      height: 400px;
+      background: blue;
+    }
+    #footer{
+      height: 50px;
+      background: yellow;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div id="header">头部</div>
+    <div id="content">内容</div>
+    <div id="footer">尾部</div>
+  </div>
+</body>
+</html>
+```
+![](/img/in-post/csslayout/singlayout.png)
+*效果图*
+
+2.两栏布局
+
+定义：一列固定宽度，另外一列自适应宽度
+
+方法：浮动元素+普通元素margin
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>两列</title>
+  <style>
+    .layout {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    #content:after{
+      content: '';
+      display: block;
+      clear: both;
+    }
+    .aside{
+      width: 200px;
+      height: 100px;
+      background: yellow;
+      float: right;
+   
+    }
+    .main{
+      height: 400px;
+      margin-right: 200px;
+      background: red;
+    }
+    #footer{
+      background: #ccc;
+    }
+  
+  </style>
+</head>
+<body>
+  <div id="content" class="layout">
+    <div class="aside">aside</div>
+    <div class="main">main</div>
+  </div>
+  <div id="footer" class="layout">footer</div>
+</body>
+</html>
+```
+![](/img/in-post/csslayout/doublelayout.png)
+*效果图*
+
+3.三栏布局
+
+定义：两侧两列固定宽度，中间列自适应宽度
+
+方法：浮动左右元素+普通元素margin
+
+注意：
+
+（1）需要在main元素上加上左右margin，因为两边的元素是浮动的。如果不加，文字会出现包围的效果。
+
+（2）标签的顺序要先写左和右浮动的元素。
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>三列</title>
+  <style>
+    #content:after{
+      content: '';
+      display: block;
+      clear: both;
+    }
+    .menu{
+      width: 100px;
+      height: 500px;
+      background: pink;
+      float: left;
+    }
+    .aside{
+      width: 200px;
+      height: 500px;
+      background: yellow;
+      float: right;
+    }
+    .main{
+      margin-left: 100px;
+      margin-right: 200px;
+      height: 500px;
+      background: red;
+    }
+    
+    #footer{
+      background: #ccc;
+    }
+  
+  </style>
+</head>
+<body>
+  <div id="content">
+    <div class="menu">aside</div>
+    <div class="aside">aside</div>
+    <div class="main">content</div>
+  </div>
+  <div id="footer">footer</div>
+</body>
+</html>
+```
+
+![](/img/in-post/csslayout/threelayout.png)
+*效果图*
+
+---
+>历史上出现过双飞翼布局、圣杯布局。这两个布局本质就是实现三列布局。目的是为了解决三列布局的标签顺序的问题，估计是产品要求标签顺序要保持左中右的顺序。这个两个布局是淘宝工程师创造的。这里就不做介绍了。因为这两个已经过时，还在用这个布局的，估计就只有淘宝这个公司了吧。上面的布局其实也过时了，因为出了新的技术了。那就是超级好用的flex，可以解决日常的常用布局。网络资料丰富，上手简单，可以自行了解。
