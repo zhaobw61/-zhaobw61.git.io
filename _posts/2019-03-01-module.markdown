@@ -4,7 +4,7 @@ title:        "前端模块化的进化史"
 subtitle:     ""
 date:         2019-03-02 21:00:00
 author:       "boowen"
-header-img:   "img/post-bg-2018-11.jpg"
+header-img:   "img/post-bg-module.jpg"
 header-mask:  0.3
 tags:
     - 前端
