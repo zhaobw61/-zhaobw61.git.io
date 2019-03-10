@@ -4,7 +4,7 @@ title:        "常用设计模式"
 subtitle:     "发布订阅模式"
 date:         2019-03-09 21:00:00
 author:       "boowen"
-header-img:   "img/post-bg-module.png"
+header-img:   "img/post-bg-pubsub.png"
 header-mask:  0.3
 tags:
     - 前端
