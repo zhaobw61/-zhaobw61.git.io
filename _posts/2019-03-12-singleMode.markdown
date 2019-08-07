@@ -108,5 +108,12 @@ var ProxySingletonCreateDiv = (function () {
 var a = new ProxySingletonCreateDiv('sven1');
 var b = new ProxySingletonCreateDiv('sven2');
 ```
-ProxySingletonCreateDiv代理了
+ProxySingletonCreateDiv负责里判断是否单一的职责，解耦了对象的初始化和判断是否是单例。
+
+## 真的有必要模拟类吗？
+
+javaScript是一种没有类的语言，我们用原型链模拟了类的继承和派生、多态。模拟类的存在还有很多缺点，例如显示伪多态。这都给开发人员留下了很多陷阱。不过ES6新添了Class。在JS里创建对象非常简单
+
+# 未完待续
+
 
